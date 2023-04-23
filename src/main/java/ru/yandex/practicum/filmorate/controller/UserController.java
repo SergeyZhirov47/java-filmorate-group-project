@@ -35,7 +35,7 @@ public class UserController {
         newUser.setId(newId);
         users.put(newId, newUser);
 
-        log.info(String.format("Добавлен новый пользователь {0}", newUser));
+        log.info(String.format("Добавлен новый пользователь %s", newUser));
 
         return newUser;
     }
