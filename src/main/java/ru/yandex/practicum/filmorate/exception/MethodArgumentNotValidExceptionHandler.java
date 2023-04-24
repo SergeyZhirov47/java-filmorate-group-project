@@ -26,9 +26,9 @@ public class MethodArgumentNotValidExceptionHandler {
 
     @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public String handle(NotFoundException exp) {
+    public ErrorResponseData handle(NotFoundException exp) {
         log.warn(exp.getMessage(), exp);
 
-        return (exp.getMessage());
+        return new ErrorResponseData(exp.getMessage());
     }
 }
