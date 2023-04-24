@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 public class UserController {
     private final Map<Integer, User> users = new HashMap<>();
     private int lastId = 0;
+
     private int nextId() {
         lastId++;
         return lastId;
@@ -28,7 +29,7 @@ public class UserController {
     @ResponseStatus(HttpStatus.CREATED)
     public User create(@Valid @RequestBody User newUser) {
         if (StringUtils.isBlank(newUser.getName())) {
-           newUser.setName(newUser.getLogin());
+            newUser.setName(newUser.getLogin());
         }
 
         final int newId = nextId();

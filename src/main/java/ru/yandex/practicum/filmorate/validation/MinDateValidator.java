@@ -14,8 +14,7 @@ public class MinDateValidator implements ConstraintValidator<MinDate, LocalDate>
     public void initialize(MinDate constraintAnnotation) {
         try {
             this.minDate = LocalDate.parse(constraintAnnotation.minDate());
-        }
-        catch (DateTimeParseException exp) {
+        } catch (DateTimeParseException exp) {
             minDate = null;
         }
     }

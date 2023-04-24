@@ -18,6 +18,7 @@ import java.util.stream.Collectors;
 public class FilmController {
     private final Map<Integer, Film> films = new HashMap<>();
     private int lastId = 0;
+
     private int nextId() {
         lastId++;
         return lastId;
