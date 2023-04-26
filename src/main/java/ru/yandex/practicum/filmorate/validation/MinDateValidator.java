@@ -8,7 +8,7 @@ import java.time.format.DateTimeParseException;
 import static java.util.Objects.isNull;
 
 public class MinDateValidator implements ConstraintValidator<MinDate, LocalDate> {
-    LocalDate minDate = null;
+    private LocalDate minDate = null;
 
     @Override
     public void initialize(MinDate constraintAnnotation) {
