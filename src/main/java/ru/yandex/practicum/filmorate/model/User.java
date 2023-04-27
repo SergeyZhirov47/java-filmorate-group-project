@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.model;
 
 import lombok.Data;
+import org.apache.commons.lang3.StringUtils;
 import ru.yandex.practicum.filmorate.validation.NoWhitespace;
 
 import javax.validation.constraints.Email;
@@ -19,4 +20,10 @@ public class User {
     private String name;
     @PastOrPresent(message = "Дата дня рождения не может быть в будущем")
     private LocalDate birthday;
+
+    public void setEmptyNameAsLogin() {
+        if (StringUtils.isBlank(getName())) {
+            setName(getLogin());
+        }
+    }
 }

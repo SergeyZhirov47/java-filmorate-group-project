@@ -28,9 +28,7 @@ public class UserController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public User create(@Valid @RequestBody User newUser) {
-        if (StringUtils.isBlank(newUser.getName())) {
-            newUser.setName(newUser.getLogin());
-        }
+        newUser.setEmptyNameAsLogin();
 
         final int newId = nextId();
         newUser.setId(newId);
@@ -44,6 +42,8 @@ public class UserController {
     @PutMapping
     @ResponseStatus(HttpStatus.OK)
     public User update(@Valid @RequestBody User user) {
+        user.setEmptyNameAsLogin();
+
         final int userId = user.getId();
         if (users.containsKey(userId)) {
             users.put(userId, user);
