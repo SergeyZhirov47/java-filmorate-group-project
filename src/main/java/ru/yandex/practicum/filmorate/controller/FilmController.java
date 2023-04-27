@@ -27,6 +27,8 @@ public class FilmController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Film add(@Valid @RequestBody Film newFilm) {
+        log.info("POST /films");
+
         final int newId = nextId();
         newFilm.setId(newId);
 
@@ -39,6 +41,8 @@ public class FilmController {
     @PutMapping
     @ResponseStatus(HttpStatus.OK)
     public Film update(@Valid @RequestBody Film film) {
+        log.info("PUT /films");
+
         final int filmId = film.getId();
         if (films.containsKey(filmId)) {
             films.put(filmId, film);
@@ -54,6 +58,7 @@ public class FilmController {
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public List<Film> getAll() {
+        log.info("GET /films");
         return films.values().stream().collect(Collectors.toUnmodifiableList());
     }
 }

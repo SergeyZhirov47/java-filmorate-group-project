@@ -28,6 +28,8 @@ public class UserController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public User create(@Valid @RequestBody User newUser) {
+        log.info("POST /users");
+
         newUser.setEmptyNameAsLogin();
 
         final int newId = nextId();
@@ -42,6 +44,8 @@ public class UserController {
     @PutMapping
     @ResponseStatus(HttpStatus.OK)
     public User update(@Valid @RequestBody User user) {
+        log.info("PUT /users");
+
         user.setEmptyNameAsLogin();
 
         final int userId = user.getId();
@@ -59,6 +63,7 @@ public class UserController {
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public List<User> getUsers() {
+        log.info("GET /users");
         return users.values().stream().collect(Collectors.toUnmodifiableList());
     }
 }
