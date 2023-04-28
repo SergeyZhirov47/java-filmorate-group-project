@@ -8,7 +8,7 @@ import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
 public abstract class BaseControllerTest {
-    protected final static ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
+    protected static final ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules();
     protected String endPoint;
     @Autowired
     protected MockMvc mockMvc;
