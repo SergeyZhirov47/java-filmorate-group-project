@@ -10,7 +10,10 @@
 hs_err_pid*
 out/
 target/
-!.mvn/wrapper/maven-wrapper.jar
+HELP.md
+.mvn/
+mvnw
+mvnw.cmd
 !**/src/main/**/target/
 !**/src/test/**/target/
 
