@@ -4,16 +4,11 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.UserService;
 
 import javax.validation.Valid;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
@@ -53,48 +48,45 @@ public class UserController {
         return userService.getAll();
     }
 
-    @GetMapping("/users/{id}")
+    @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public User getUserById(@PathVariable int id) {
+    public User getUserById(@Valid @PathVariable int id) {
         log.info("GET /users/{id}");
         return userService.getById(id);
     }
 
-    @DeleteMapping("/users/{id}")
+    @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public void deleteUserById(@PathVariable int id) {
+    public void deleteUserById(@Valid @PathVariable int id) {
         log.info("DELETE /users/{id}");
         userService.deleteById(id);
     }
 
-    /*
-    PUT /users/{id}/friends/{friendId} — добавление в друзья.
-    DELETE /users/{id}/friends/{friendId} — удаление из друзей.
-    GET /users/{id}/friends — возвращаем список пользователей, являющихся его друзьями.
-    GET /users/{id}/friends/common/{otherId} — список друзей, общих с другим пользователем.
-    */
-
-    @PutMapping("/users/{id}/friends/{friendId}")
+    @PutMapping("/{id}/friends/{friendId}")
     @ResponseStatus(HttpStatus.OK)
-    public User addFriend(@PathVariable int id, @PathVariable int friendId) {
-        throw new UnsupportedOperationException("Not implemented!");
+    public void addFriend(@Valid @PathVariable int id, @Valid @PathVariable int friendId) {
+        log.info("PUT /users/{id}/friends/{friendId}");
+        userService.addFriend(id, friendId);
     }
 
-    @DeleteMapping("/users/{id}/friends/{friendId}")
+    @DeleteMapping("/{id}/friends/{friendId}")
     @ResponseStatus(HttpStatus.OK)
-    public void deleteFriend(@PathVariable int id, @PathVariable int friendId) {
-        throw new UnsupportedOperationException("Not implemented!");
+    public void deleteFriend(@Valid @PathVariable int id, @Valid @PathVariable int friendId) {
+        log.info("DELETE /users/{id}/friends/{friendId}");
+        userService.deleteFriend(id, friendId);
     }
 
-    @GetMapping("/users/{id}/friends")
+    @GetMapping("/{id}/friends")
     @ResponseStatus(HttpStatus.OK)
-    List<User> getAllFriends(@PathVariable int id) {
-        throw new UnsupportedOperationException("Not implemented!");
+    List<User> getAllFriends(@Valid @PathVariable int id) {
+        log.info("GET /users/{id}/friends");
+        return userService.getFriends(id);
     }
 
-    @GetMapping("/users/{id}/friends/common/{otherId}")
+    @GetMapping("/{id}/friends/common/{otherId}")
     @ResponseStatus(HttpStatus.OK)
-    List<User> getSameFriends() {
-        throw new UnsupportedOperationException("Not implemented!");
+    List<User> getCommonFriends(@Valid @PathVariable int id, @Valid @PathVariable int otherId) {
+        log.info("GET /users/{id}/friends/common/{otherId}");
+        return userService.getCommonFriends(id, otherId);
     }
 }
