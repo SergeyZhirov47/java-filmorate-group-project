@@ -60,7 +60,7 @@ public class UserService {
         checkUserExistsWithException(userId, String.format("Нет пользователя с id = %s", userId));
         checkUserExistsWithException(friendId, String.format("Нет пользователя (друга) с id = %s", friendId));
 
-        friendStorage.addFriend(userId, friendId);
+        friendStorage.deleteFriend(userId, friendId);
     }
 
     public List<User> getFriends(int userId) {

@@ -1,31 +1,22 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RestController
 @RequestMapping("/films")
+@RequiredArgsConstructor
 public class FilmController {
-   private final FilmService filmService;
-
-    @Autowired
-   public FilmController(final FilmService filmService) {
-       this.filmService = filmService;
-   }
+    private final FilmService filmService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -54,37 +45,32 @@ public class FilmController {
         return filmService.getAll();
     }
 
-    // GET .../films/{id}
-    @GetMapping("/films/{id}")
+    @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public Film getFilmById(@PathVariable int id) {
+    public Film getFilmById(@PathVariable(name="id") int id) {
         log.info("GET /films/{id}");
         return filmService.getById(id);
     }
 
-    /*
-    PUT /films/{id}/like/{userId} — пользователь ставит лайк фильму.
-    DELETE /films/{id}/like/{userId} — пользователь удаляет лайк.
-    GET /films/popular?count={count} — возвращает список из первых count фильмов по количеству лайков. Если значение параметра count не задано, верните первые 10.
-     */
 
-    @PutMapping("/films/{id}/like/{userId}")
+    @PutMapping("/{id}/like/{userId}")
     @ResponseStatus(HttpStatus.OK)
-    public void addLike(@PathVariable int id, @PathVariable int userId) {
-        throw new UnsupportedOperationException("Not implemented!");
+    public void addLike(@PathVariable(name="id") int id, @PathVariable(name="userId") int userId) {
+        log.info("PUT /films/{id}/like/{userId}");
+        filmService.addLike(id, userId);
     }
 
-    @DeleteMapping
+    @DeleteMapping("/{id}/like/{userId}")
     @ResponseStatus(HttpStatus.OK)
-    public void deleteLike(@PathVariable int id, @PathVariable int userId) {
-        throw new UnsupportedOperationException("Not implemented!");
+    public void deleteLike(@PathVariable(name="id") int id, @PathVariable(name="userId") int userId) {
+        log.info("DELETE /films/{id}/like/{userId}");
+        filmService.deleteLike(id, userId);
     }
 
-    // ToDo
-    // Здесь задавать кол-во по умолчанию (если параметр не задан?) или в сервисе? (наверное в сервисе)
-    @GetMapping("/films/popular?count={count}")
+    @GetMapping("/popular")
     @ResponseStatus(HttpStatus.OK)
-    public List<Film> getPopular(@RequestParam Optional<Integer> count) {
-        throw new UnsupportedOperationException("Not implemented!");
+    public List<Film> getPopular(@RequestParam(name="count") Optional<Integer> count) {
+        log.info("GET /films/popular?count={count}");
+        return filmService.getPopular(count);
     }
 }

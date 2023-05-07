@@ -30,11 +30,12 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
-    public void add(User user) {
+    public int add(User user) {
         final int newId = nextId();
         user.setId(newId);
 
         users.put(newId, user);
+        return newId;
     }
 
     @Override

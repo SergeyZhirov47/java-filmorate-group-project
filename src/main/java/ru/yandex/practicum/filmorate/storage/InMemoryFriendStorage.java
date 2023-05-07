@@ -47,6 +47,12 @@ public class InMemoryFriendStorage implements FriendStorage {
 
     @Override
     public List<Integer> getFriends(int userId) {
+        final Set<Integer> userFriends = friends.get(userId);
+
+        if (isNull(userFriends)) {
+            return new ArrayList<>();
+        }
+
         return friends.get(userId).stream().collect(Collectors.toUnmodifiableList());
     }
 

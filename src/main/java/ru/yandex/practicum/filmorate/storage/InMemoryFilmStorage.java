@@ -31,11 +31,12 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
-    public void add(Film film) {
+    public int add(Film film) {
         final int newId = nextId();
         film.setId(newId);
 
         films.put(newId, film);
+        return newId;
     }
 
     @Override
@@ -51,7 +52,7 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public void delete(Film film) {
-
+        // ToDo
     }
 
     @Override

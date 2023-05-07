@@ -7,7 +7,7 @@ import java.util.Optional;
 
 public interface UserStorage {
     Optional<User> get(int id);
-    void add(User user);
+    int add(User user);
     void update(User user);
     void delete(User user);
     void deleteById(int id);
