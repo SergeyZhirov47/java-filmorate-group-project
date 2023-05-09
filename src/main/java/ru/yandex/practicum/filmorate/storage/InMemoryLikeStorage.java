@@ -4,17 +4,11 @@ import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import static java.util.Objects.isNull;
 
 @Component
 public class InMemoryLikeStorage implements LikeStorage {
-    // как хранить?
-    // 1. ключ фильм - значение список лайкнувших (по текущему ТЗ самый простой вариант).
-    // 2. ключ пользователь - значение список понравившихся (лайкнутым им фильмов)
-    // 3. и то и другое.
-    // 4. ???
     protected Map<Integer, Set<Integer>> filmLikes = new HashMap<>();
 
     @Override
