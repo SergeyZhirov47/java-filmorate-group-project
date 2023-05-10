@@ -10,6 +10,7 @@ public enum ErrorMessage {
     DELETE_FAIL("Удаление не успешно");
     @Getter
     private final String message;
+
     ErrorMessage(final String message) {
         this.message = message;
     }
