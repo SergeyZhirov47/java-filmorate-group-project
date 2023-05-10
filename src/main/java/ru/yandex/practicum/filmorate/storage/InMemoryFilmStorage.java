@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.common.IdGenerator;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 
@@ -13,12 +14,7 @@ import java.util.stream.Collectors;
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
     private final Map<Integer, Film> films = new HashMap<>();
-    private int lastId = 0;
-
-    private int nextId() {
-        lastId++;
-        return lastId;
-    }
+    private final IdGenerator idGenerator = new IdGenerator();
 
     @Override
     public Optional<Film> get(int id) {
@@ -32,7 +28,7 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public int add(Film film) {
-        final int newId = nextId();
+        final int newId = idGenerator.getNext();
         film.setId(newId);
 
         films.put(newId, film);
