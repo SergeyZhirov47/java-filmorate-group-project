@@ -43,7 +43,6 @@ public class InMemoryFilmStorage implements FilmStorage {
         if (films.containsKey(filmId)) {
             films.put(filmId, film);
         } else {
-            // throw new NotFoundException(String.format("Нет фильма с id = %s. Обновление не успешно.", filmId));
             throw new NotFoundException(ErrorMessageUtil.getFilmUpdateFailMessage(filmId));
         }
     }
@@ -59,10 +58,7 @@ public class InMemoryFilmStorage implements FilmStorage {
         if (films.containsKey(id)) {
             films.remove(id);
         } else {
-            // throw new NotFoundException(String.format("Нет фильма с id = %s. Удаление не успешно.", id));
             throw new NotFoundException(ErrorMessageUtil.getFilmDeleteFailMessage(id));
         }
     }
-
-
 }

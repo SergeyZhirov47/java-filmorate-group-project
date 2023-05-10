@@ -27,9 +27,11 @@ public class FilmService {
         this.userStorage = userStorage;
     }
 
-    public void add(Film film) {
+    public int add(Film film) {
         final int filmId = filmStorage.add(film);
         likeStorage.registerFilm(filmId);
+
+        return filmId;
     }
 
     public void update(Film film) {

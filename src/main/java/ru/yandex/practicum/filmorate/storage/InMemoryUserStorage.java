@@ -43,7 +43,6 @@ public class InMemoryUserStorage implements UserStorage {
         if (users.containsKey(userId)) {
             users.put(userId, user);
         } else {
-            // throw new NotFoundException(String.format("Нет пользователя с id = %s. Обновление не успешно.", userId));
             throw new NotFoundException(ErrorMessageUtil.getUserUpdateFailMessage(userId));
         }
     }
@@ -59,7 +58,6 @@ public class InMemoryUserStorage implements UserStorage {
         if (users.containsKey(id)) {
             users.remove(id);
         } else {
-            // throw new NotFoundException(String.format("Нет пользователя с id = %s. Удаление не успешно.", id));
             throw new NotFoundException(ErrorMessageUtil.getUserDeleteFailMessage(id));
         }
     }

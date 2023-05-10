@@ -23,9 +23,11 @@ public class UserService {
         this.friendStorage = friendStorage;
     }
 
-    public void add(User user) {
+    public int add(User user) {
         user.setEmptyNameAsLogin();
-        userStorage.add(user);
+        final int userId = userStorage.add(user);
+
+        return userId;
     }
 
     public void update(User user) {
