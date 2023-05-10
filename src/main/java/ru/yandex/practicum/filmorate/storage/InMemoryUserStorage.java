@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.common.ErrorMessageUtil;
 import ru.yandex.practicum.filmorate.common.IdGenerator;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -42,7 +43,8 @@ public class InMemoryUserStorage implements UserStorage {
         if (users.containsKey(userId)) {
             users.put(userId, user);
         } else {
-            throw new NotFoundException(String.format("Нет пользователя с id = %s. Обновление не успешно.", userId));
+            // throw new NotFoundException(String.format("Нет пользователя с id = %s. Обновление не успешно.", userId));
+            throw new NotFoundException(ErrorMessageUtil.getUserUpdateFailMessage(userId));
         }
     }
 
@@ -57,7 +59,8 @@ public class InMemoryUserStorage implements UserStorage {
         if (users.containsKey(id)) {
             users.remove(id);
         } else {
-            throw new NotFoundException(String.format("Нет пользователя с id = %s. Удаление не успешно.", id));
+            // throw new NotFoundException(String.format("Нет пользователя с id = %s. Удаление не успешно.", id));
+            throw new NotFoundException(ErrorMessageUtil.getUserDeleteFailMessage(id));
         }
     }
 }

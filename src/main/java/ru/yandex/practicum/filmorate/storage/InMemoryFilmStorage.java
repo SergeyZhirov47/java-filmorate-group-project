@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage;
 
 import org.springframework.stereotype.Component;
+import ru.yandex.practicum.filmorate.common.ErrorMessageUtil;
 import ru.yandex.practicum.filmorate.common.IdGenerator;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -42,7 +43,8 @@ public class InMemoryFilmStorage implements FilmStorage {
         if (films.containsKey(filmId)) {
             films.put(filmId, film);
         } else {
-            throw new NotFoundException(String.format("Нет фильма с id = %s. Обновление не успешно.", filmId));
+            // throw new NotFoundException(String.format("Нет фильма с id = %s. Обновление не успешно.", filmId));
+            throw new NotFoundException(ErrorMessageUtil.getFilmUpdateFailMessage(filmId));
         }
     }
 
@@ -57,7 +59,8 @@ public class InMemoryFilmStorage implements FilmStorage {
         if (films.containsKey(id)) {
             films.remove(id);
         } else {
-            throw new NotFoundException(String.format("Нет фильма с id = %s. Удаление не успешно.", id));
+            // throw new NotFoundException(String.format("Нет фильма с id = %s. Удаление не успешно.", id));
+            throw new NotFoundException(ErrorMessageUtil.getFilmDeleteFailMessage(id));
         }
     }
 

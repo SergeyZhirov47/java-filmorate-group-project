@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.common.ErrorMessageUtil;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.FriendStorage;
@@ -39,7 +40,7 @@ public class UserService {
     public User getById(int id) {
         final Optional<User> userOpt = userStorage.get(id);
         if (userOpt.isEmpty()) {
-            throw new NotFoundException(String.format("Нет пользователя с id = %s", id));
+            throw new NotFoundException(ErrorMessageUtil.getNoUserWithIdMessage(id));
         }
 
         return userOpt.get();
@@ -50,28 +51,28 @@ public class UserService {
     }
 
     public void addFriend(int userId, int friendId) {
-        checkUserExistsWithException(userId, String.format("Нет пользователя с id = %s", userId));
-        checkUserExistsWithException(friendId, String.format("Нет пользователя (друга) с id = %s", friendId));
+        checkUserExistsWithException(userId, ErrorMessageUtil.getNoUserWithIdMessage(userId));
+        checkUserExistsWithException(friendId, ErrorMessageUtil.getNoFriendWithIdMessage(friendId));
 
         friendStorage.addFriend(userId, friendId);
     }
 
     public void deleteFriend(int userId, int friendId) {
-        checkUserExistsWithException(userId, String.format("Нет пользователя с id = %s", userId));
-        checkUserExistsWithException(friendId, String.format("Нет пользователя (друга) с id = %s", friendId));
+        checkUserExistsWithException(userId, ErrorMessageUtil.getNoUserWithIdMessage(userId));
+        checkUserExistsWithException(friendId, ErrorMessageUtil.getNoFriendWithIdMessage(friendId));
 
         friendStorage.deleteFriend(userId, friendId);
     }
 
     public List<User> getFriends(int userId) {
-        checkUserExistsWithException(userId, String.format("Нет пользователя с id = %s", userId));
+        checkUserExistsWithException(userId, ErrorMessageUtil.getNoUserWithIdMessage(userId));
 
         final List<Integer> friendIds = friendStorage.getFriends(userId);
         return getUserListByIds(friendIds);
     }
 
     public List<User> getCommonFriends(int userId, int otherUserId) {
-        checkUserExistsWithException(userId, String.format("Нет пользователя с id = %s", userId));
+        checkUserExistsWithException(userId, ErrorMessageUtil.getNoUserWithIdMessage(userId));
         checkUserExistsWithException(otherUserId, String.format("Нет пользователя (с кем должны быть общие друзья) с id = %s", otherUserId));
 
         final List<Integer> commonFriendIds = friendStorage.getCommonFriends(userId, otherUserId);

@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.common.ErrorMessageUtil;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
@@ -39,7 +40,7 @@ public class FilmService {
         final Optional<Film> filmOpt = filmStorage.get(id);
 
         if (filmOpt.isEmpty()) {
-            throw new NotFoundException(String.format("Нет фильма с id = %s", id));
+            throw new NotFoundException(ErrorMessageUtil.getNoFilmWithIdMessage(id));
         }
 
         return filmOpt.get();
@@ -50,15 +51,15 @@ public class FilmService {
     }
 
     public void addLike(int filmId, int userId) {
-        checkExistsWithException(isFilmExists(filmId), String.format("Нет фильма с id = %s", filmId));
-        checkExistsWithException(isUserExists(userId), String.format("Нет пользователя с id = %s", userId));
+        checkExistsWithException(isFilmExists(filmId), ErrorMessageUtil.getNoFilmWithIdMessage(filmId));
+        checkExistsWithException(isUserExists(userId), ErrorMessageUtil.getNoUserWithIdMessage(userId));
 
         likeStorage.addLike(filmId, userId);
     }
 
     public void deleteLike(int filmId, int userId) {
-        checkExistsWithException(isFilmExists(filmId), String.format("Нет фильма с id = %s", filmId));
-        checkExistsWithException(isUserExists(userId), String.format("Нет пользователя с id = %s", userId));
+        checkExistsWithException(isFilmExists(filmId), ErrorMessageUtil.getNoFilmWithIdMessage(filmId));
+        checkExistsWithException(isUserExists(userId), ErrorMessageUtil.getNoUserWithIdMessage(userId));
 
         likeStorage.removeLike(filmId, userId);
     }
