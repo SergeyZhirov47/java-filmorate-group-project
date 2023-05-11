@@ -24,9 +24,9 @@ public class InMemoryLikeStorage implements LikeStorage {
         if (!isNull(userHowLikes)) {
             userHowLikes.add(userId);
         } else {
-            filmLikes.put(filmId, new HashSet<>() {{
-                add(userId);
-            }});
+            final Set<Integer> usersHowLikes = new HashSet<>();
+            usersHowLikes.add(userId);
+            filmLikes.put(filmId, usersHowLikes);
         }
     }
 

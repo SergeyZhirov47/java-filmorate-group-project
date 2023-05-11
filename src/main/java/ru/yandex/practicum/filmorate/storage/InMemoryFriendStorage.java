@@ -29,7 +29,7 @@ public class InMemoryFriendStorage implements FriendStorage {
             friends.get(friendId).add(userId);
         } else {
             final Set<Integer> friendSet = new HashSet<>();
-            friendSet.add(friendId);
+            friendSet.add(userId);
 
             friends.put(friendId, friendSet);
         }
