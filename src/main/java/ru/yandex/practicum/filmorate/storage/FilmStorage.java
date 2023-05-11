@@ -7,9 +7,14 @@ import java.util.Optional;
 
 public interface FilmStorage {
     Optional<Film> get(int id);
+
     int add(Film film);
+
     void update(Film film);
+
     void delete(Film film);
+
     void deleteById(int id);
+
     List<Film> getAll();
 }

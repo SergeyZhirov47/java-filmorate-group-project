@@ -14,6 +14,7 @@ public class InMemoryFriendStorage implements FriendStorage {
     // Значения хранятся зеркально. Если у пользователя с id = 1 добавлен друг с id = 101, то будут внесены две записи.
     // у 1 добавился друг 101. у 101 добавился друг 1.
     protected Map<Integer, Set<Integer>> friends = new HashMap<>();
+
     @Override
     public void addFriend(int userId, int friendId) {
         if (friends.containsKey(userId)) {

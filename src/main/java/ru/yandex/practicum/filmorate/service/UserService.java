@@ -93,8 +93,8 @@ public class UserService {
     }
 
     private void checkUserExistsWithException(int id, final String message) {
-       if (!isUserExists(id)) {
-           throw new NotFoundException(message);
-       }
+        if (!isUserExists(id)) {
+            throw new NotFoundException(message);
+        }
     }
 }
