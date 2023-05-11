@@ -20,14 +20,16 @@ public class InMemoryFriendStorage implements FriendStorage {
         if (friends.containsKey(userId)) {
             friends.get(userId).add(friendId);
         } else {
-            friends.put(userId, new HashSet<>() {{
+            friends.put(userId, new HashSet<>()
+            {{
                 add(friendId);
             }});
         }
         if (friends.containsKey(friendId)) {
             friends.get(friendId).add(userId);
         } else {
-            friends.put(friendId, new HashSet<>() {{
+            friends.put(friendId, new HashSet<>()
+            {{
                 add(userId);
             }});
         }
