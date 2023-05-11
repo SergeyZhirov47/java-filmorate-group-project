@@ -20,18 +20,18 @@ public class InMemoryFriendStorage implements FriendStorage {
         if (friends.containsKey(userId)) {
             friends.get(userId).add(friendId);
         } else {
-            friends.put(userId, new HashSet<>()
-            {{
-                add(friendId);
-            }});
+            final Set<Integer> friendSet = new HashSet<>();
+            friendSet.add(friendId);
+
+            friends.put(userId, friendSet);
         }
         if (friends.containsKey(friendId)) {
             friends.get(friendId).add(userId);
         } else {
-            friends.put(friendId, new HashSet<>()
-            {{
-                add(userId);
-            }});
+            final Set<Integer> friendSet = new HashSet<>();
+            friendSet.add(friendId);
+
+            friends.put(friendId, friendSet);
         }
     }
 
