@@ -33,7 +33,6 @@ public class FilmControllerTest extends BaseControllerTest {
                 .duration(60)
                 .build();
 
-
         final String json = asJsonString(film);
 
         this.mockMvc.perform(MockMvcRequestBuilders.post(endPoint)
