@@ -18,7 +18,7 @@ public class UserService {
     protected FriendStorage friendStorage;
 
     @Autowired
-    public UserService(UserStorage userStorage, FriendStorage friendStorage) {
+    public UserService(final UserStorage userStorage, final FriendStorage friendStorage) {
         this.userStorage = userStorage;
         this.friendStorage = friendStorage;
     }
