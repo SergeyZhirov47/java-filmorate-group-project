@@ -15,10 +15,10 @@ import static java.util.stream.Collectors.toUnmodifiableList;
 
 @Service
 public class FilmService {
+    protected final int defaultPopularLimit = 10;
     protected FilmStorage filmStorage;
     protected LikeStorage likeStorage;
     protected UserStorage userStorage;
-    protected final int defaultPopularLimit = 10;
 
     public FilmService(final FilmStorage filmStorage, final LikeStorage likeStorage, final UserStorage userStorage) {
         this.filmStorage = filmStorage;
