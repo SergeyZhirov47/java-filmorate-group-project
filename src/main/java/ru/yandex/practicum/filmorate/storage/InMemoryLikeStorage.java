@@ -39,8 +39,10 @@ public class InMemoryLikeStorage implements LikeStorage {
 
     @Override
     public List<Integer> getPopular(int count) {
+        final Comparator<Map.Entry<Integer, Set<Integer>>> likesCountDescComparator = Comparator.<Map.Entry<Integer, Set<Integer>>>comparingInt(kv -> kv.getValue().size()).reversed();
+
         return filmLikes.entrySet().stream()
-                .sorted(Comparator.<Map.Entry<Integer, Set<Integer>>>comparingInt(kv -> kv.getValue().size()).reversed())
+                .sorted(likesCountDescComparator)
                 .map(Map.Entry::getKey)
                 .limit(count)
                 .collect(Collectors.toUnmodifiableList());
