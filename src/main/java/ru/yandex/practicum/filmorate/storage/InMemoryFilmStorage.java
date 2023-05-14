@@ -28,6 +28,11 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
+    public boolean contains(int id) {
+        return films.containsKey(id);
+    }
+
+    @Override
     public int add(Film film) {
         final int newId = idGenerator.getNext();
         film.setId(newId);
@@ -40,7 +45,7 @@ public class InMemoryFilmStorage implements FilmStorage {
     public void update(Film film) {
         final int filmId = film.getId();
 
-        if (films.containsKey(filmId)) {
+        if (contains(filmId)) {
             films.put(filmId, film);
         } else {
             throw new NotFoundException(ErrorMessageUtil.getFilmUpdateFailMessage(filmId));
@@ -55,7 +60,7 @@ public class InMemoryFilmStorage implements FilmStorage {
 
     @Override
     public void deleteById(int id) {
-        if (films.containsKey(id)) {
+        if (contains(id)) {
             films.remove(id);
         } else {
             throw new NotFoundException(ErrorMessageUtil.getFilmDeleteFailMessage(id));

@@ -17,4 +17,6 @@ public interface FilmStorage {
     void deleteById(int id);
 
     List<Film> getAll();
+
+    boolean contains(int id);
 }
