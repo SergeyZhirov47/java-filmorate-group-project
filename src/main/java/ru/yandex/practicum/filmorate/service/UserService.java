@@ -77,7 +77,13 @@ public class UserService {
         checkUserExistsWithException(userId, ErrorMessageUtil.getNoUserWithIdMessage(userId));
         checkUserExistsWithException(otherUserId, String.format("Нет пользователя (с кем должны быть общие друзья) с id = %s", otherUserId));
 
-        final List<Integer> commonFriendIds = friendStorage.getCommonFriends(userId, otherUserId);
+        final List<Integer> userFriendIds = friendStorage.getFriends(userId);
+        final List<Integer> otherUserFriendIds = friendStorage.getFriends(otherUserId);
+
+        final List<Integer> commonFriendIds = userFriendIds.stream()
+                .filter(otherUserFriendIds::contains)
+                .collect(Collectors.toUnmodifiableList());
+
         return getUserListByIds(commonFriendIds);
     }
 

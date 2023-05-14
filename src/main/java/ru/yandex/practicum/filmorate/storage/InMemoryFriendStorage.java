@@ -45,21 +45,6 @@ public class InMemoryFriendStorage implements FriendStorage {
         return userFriends.stream().collect(Collectors.toUnmodifiableList());
     }
 
-    @Override
-    public List<Integer> getCommonFriends(int userId, int otherUserId) {
-        final Set<Integer> userFriends = friends.get(userId);
-        final Set<Integer> otherUserFriends = friends.get(otherUserId);
-
-        // если у кого нет друзей, то пустой список
-        if (isNull(userFriends) || isNull(otherUserFriends)) {
-            return new ArrayList<>();
-        }
-
-        return userFriends.stream()
-                .filter(otherUserFriends::contains)
-                .collect(Collectors.toUnmodifiableList());
-    }
-
     private void addFriendOneWay(int userId, int friendId) {
         if (friends.containsKey(userId)) {
             friends.get(userId).add(friendId);
