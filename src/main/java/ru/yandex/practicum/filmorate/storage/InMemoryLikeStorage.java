@@ -2,7 +2,10 @@ package ru.yandex.practicum.filmorate.storage;
 
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
@@ -37,15 +40,12 @@ public class InMemoryLikeStorage implements LikeStorage {
         }
     }
 
+    // Ключ - id фильма, значение - кол-во пользователей кому фильм понравился.
     @Override
-    public List<Integer> getPopular(int count) {
-        final Comparator<Map.Entry<Integer, Set<Integer>>> likesCountDescComparator = Comparator.<Map.Entry<Integer, Set<Integer>>>comparingInt(kv -> kv.getValue().size()).reversed();
-
+    public Map<Integer, Integer> getFilmLikes() {
         return filmLikes.entrySet().stream()
-                .sorted(likesCountDescComparator)
-                .map(Map.Entry::getKey)
-                .limit(count)
-                .collect(Collectors.toUnmodifiableList());
+                .collect(Collectors.toUnmodifiableMap(Map.Entry::getKey,
+                        v -> v.getValue().size()));
     }
 
     private boolean filmContains(int id) {

@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.storage;
 
-import java.util.List;
+import java.util.Map;
 
 public interface LikeStorage {
     void registerFilm(int filmId);
@@ -9,5 +9,5 @@ public interface LikeStorage {
 
     void removeLike(int filmId, int userId);
 
-    List<Integer> getPopular(int count);
+    Map<Integer, Integer> getFilmLikes();
 }
