@@ -53,29 +53,29 @@ public class UserService {
     }
 
     public void addFriend(int userId, int friendId) {
-        checkUserExistsWithException(userId, ErrorMessageUtil.getNoUserWithIdMessage(userId));
-        checkUserExistsWithException(friendId, ErrorMessageUtil.getNoFriendWithIdMessage(friendId));
+        checkUserExists(userId);
+        checkFriendExists(friendId);
 
         friendStorage.addFriend(userId, friendId);
     }
 
     public void deleteFriend(int userId, int friendId) {
-        checkUserExistsWithException(userId, ErrorMessageUtil.getNoUserWithIdMessage(userId));
-        checkUserExistsWithException(friendId, ErrorMessageUtil.getNoFriendWithIdMessage(friendId));
+        checkUserExists(userId);
+        checkFriendExists(friendId);
 
         friendStorage.deleteFriend(userId, friendId);
     }
 
     public List<User> getFriends(int userId) {
-        checkUserExistsWithException(userId, ErrorMessageUtil.getNoUserWithIdMessage(userId));
+        checkUserExists(userId);
 
         final List<Integer> friendIds = friendStorage.getFriends(userId);
         return getUserListByIds(friendIds);
     }
 
     public List<User> getCommonFriends(int userId, int otherUserId) {
-        checkUserExistsWithException(userId, ErrorMessageUtil.getNoUserWithIdMessage(userId));
-        checkUserExistsWithException(otherUserId, String.format("Нет пользователя (с кем должны быть общие друзья) с id = %s", otherUserId));
+        checkUserExists(userId);
+        checkOtherUserExists(otherUserId);
 
         final List<Integer> userFriendIds = friendStorage.getFriends(userId);
         final List<Integer> otherUserFriendIds = friendStorage.getFriends(otherUserId);
@@ -102,5 +102,17 @@ public class UserService {
         if (!isUserExists(id)) {
             throw new NotFoundException(message);
         }
+    }
+
+    private void checkUserExists(int id) {
+        checkUserExistsWithException(id, ErrorMessageUtil.getNoUserWithIdMessage(id));
+    }
+
+    private void checkFriendExists(int id) {
+        checkUserExistsWithException(id, ErrorMessageUtil.getNoFriendWithIdMessage(id));
+    }
+
+    private void checkOtherUserExists(int id) {
+        checkUserExistsWithException(id, String.format("Нет пользователя (с кем должны быть общие друзья) с id = %s", id));
     }
 }
