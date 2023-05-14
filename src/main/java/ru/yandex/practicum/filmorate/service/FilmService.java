@@ -42,12 +42,9 @@ public class FilmService {
     }
 
     public Film getById(int id) {
+        checkFilmExists(id);
+
         final Optional<Film> filmOpt = filmStorage.get(id);
-
-        if (filmOpt.isEmpty()) {
-            throw new NotFoundException(ErrorMessageUtil.getNoFilmWithIdMessage(id));
-        }
-
         return filmOpt.get();
     }
 
@@ -56,15 +53,15 @@ public class FilmService {
     }
 
     public void addLike(int filmId, int userId) {
-        checkExistsWithException(isFilmExists(filmId), ErrorMessageUtil.getNoFilmWithIdMessage(filmId));
-        checkExistsWithException(isUserExists(userId), ErrorMessageUtil.getNoUserWithIdMessage(userId));
+        checkFilmExists(filmId);
+        checkUserExists(userId);
 
         likeStorage.addLike(filmId, userId);
     }
 
     public void deleteLike(int filmId, int userId) {
-        checkExistsWithException(isFilmExists(filmId), ErrorMessageUtil.getNoFilmWithIdMessage(filmId));
-        checkExistsWithException(isUserExists(userId), ErrorMessageUtil.getNoUserWithIdMessage(userId));
+        checkFilmExists(filmId);
+        checkUserExists(userId);
 
         likeStorage.removeLike(filmId, userId);
     }
@@ -83,17 +80,25 @@ public class FilmService {
     }
 
     private boolean isUserExists(int id) {
-        return userStorage.get(id).isPresent();
+        return userStorage.contains(id);
     }
 
     private boolean isFilmExists(int id) {
-        return filmStorage.get(id).isPresent();
+        return filmStorage.contains(id);
     }
 
     private void checkExistsWithException(boolean exists, final String message) {
         if (!exists) {
             throw new NotFoundException(message);
         }
+    }
+
+    private void checkFilmExists(int id) {
+        checkExistsWithException(isFilmExists(id), ErrorMessageUtil.getNoFilmWithIdMessage(id));
+    }
+
+    private void checkUserExists(int id) {
+        checkExistsWithException(isUserExists(id), ErrorMessageUtil.getNoUserWithIdMessage(id));
     }
 
     private List<Film> getFilmListByIds(final List<Integer> filmIds) {
