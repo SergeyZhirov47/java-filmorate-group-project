@@ -28,6 +28,11 @@ public class InMemoryUserStorage implements UserStorage {
     }
 
     @Override
+    public boolean contains(int id) {
+        return users.containsKey(id);
+    }
+
+    @Override
     public int add(User user) {
         final int newId = idGenerator.getNext();
         user.setId(newId);
@@ -40,7 +45,7 @@ public class InMemoryUserStorage implements UserStorage {
     public void update(User user) {
         final int userId = user.getId();
 
-        if (users.containsKey(userId)) {
+        if (contains(userId)) {
             users.put(userId, user);
         } else {
             throw new NotFoundException(ErrorMessageUtil.getUserUpdateFailMessage(userId));
@@ -55,7 +60,7 @@ public class InMemoryUserStorage implements UserStorage {
 
     @Override
     public void deleteById(int id) {
-        if (users.containsKey(id)) {
+        if (contains(id)) {
             users.remove(id);
         } else {
             throw new NotFoundException(ErrorMessageUtil.getUserDeleteFailMessage(id));

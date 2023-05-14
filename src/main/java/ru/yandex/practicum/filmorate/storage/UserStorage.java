@@ -17,4 +17,6 @@ public interface UserStorage {
     void deleteById(int id);
 
     List<User> getAll();
+
+    boolean contains(int id);
 }
