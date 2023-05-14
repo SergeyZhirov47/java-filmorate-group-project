@@ -17,22 +17,8 @@ public class InMemoryFriendStorage implements FriendStorage {
 
     @Override
     public void addFriend(int userId, int friendId) {
-        if (friends.containsKey(userId)) {
-            friends.get(userId).add(friendId);
-        } else {
-            final Set<Integer> friendSet = new HashSet<>();
-            friendSet.add(friendId);
-
-            friends.put(userId, friendSet);
-        }
-        if (friends.containsKey(friendId)) {
-            friends.get(friendId).add(userId);
-        } else {
-            final Set<Integer> friendSet = new HashSet<>();
-            friendSet.add(userId);
-
-            friends.put(friendId, friendSet);
-        }
+        addFriendOneWay(userId, friendId);
+        addFriendOneWay(friendId, userId);
     }
 
     @Override
@@ -72,5 +58,16 @@ public class InMemoryFriendStorage implements FriendStorage {
         return userFriends.stream()
                 .filter(otherUserFriends::contains)
                 .collect(Collectors.toUnmodifiableList());
+    }
+
+    private void addFriendOneWay(int userId, int friendId) {
+        if (friends.containsKey(userId)) {
+            friends.get(userId).add(friendId);
+        } else {
+            final Set<Integer> friendSet = new HashSet<>();
+            friendSet.add(friendId);
+
+            friends.put(userId, friendSet);
+        }
     }
 }
