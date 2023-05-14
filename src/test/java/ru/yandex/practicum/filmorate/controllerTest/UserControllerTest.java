@@ -1,21 +1,24 @@
-package ru.yandex.practicum.filmorate;
+package ru.yandex.practicum.filmorate.controllerTest;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import ru.yandex.practicum.filmorate.controller.UserController;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.service.UserService;
 
 import java.time.LocalDate;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(UserController.class)
 public class UserControllerTest extends BaseControllerTest {
+    @MockBean
+    private UserService userService;
 
     public UserControllerTest() {
         endPoint = "/users";
@@ -35,17 +38,10 @@ public class UserControllerTest extends BaseControllerTest {
 
         final String json = asJsonString(user);
 
-        final MvcResult result = this.mockMvc.perform(MockMvcRequestBuilders.post(endPoint)
+        this.mockMvc.perform(MockMvcRequestBuilders.post(endPoint)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
-                .andExpect(status().isCreated())
-                .andReturn();
-
-        final String responseJson = result.getResponse().getContentAsString();
-        final User responseUser = objectMapper.readValue(responseJson, User.class);
-
-        assertNotEquals(0, responseUser.getId());
-        assertThat(user).usingRecursiveComparison().ignoringFields("id").isEqualTo(responseUser);
+                .andExpect(status().isCreated());
     }
 
     @Test
@@ -60,18 +56,10 @@ public class UserControllerTest extends BaseControllerTest {
 
         final String json = asJsonString(user);
 
-        final MvcResult result = this.mockMvc.perform(MockMvcRequestBuilders.post(endPoint)
+        this.mockMvc.perform(MockMvcRequestBuilders.post(endPoint)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
-                .andExpect(status().isCreated())
-                .andReturn();
-
-
-        final String responseJson = result.getResponse().getContentAsString();
-        final User responseUser = objectMapper.readValue(responseJson, User.class);
-
-        assertNotNull(responseUser.getName());
-        assertEquals(responseUser.getName(), responseUser.getLogin());
+                .andExpect(status().isCreated());
     }
 
     // Put /users
@@ -84,8 +72,7 @@ public class UserControllerTest extends BaseControllerTest {
                 .birthday(LocalDate.now())
                 .build();
 
-        MvcResult result = addEntity(user);
-        user = objectMapper.readValue(result.getResponse().getContentAsString(), User.class);
+        addEntity(user);
 
         user.setLogin("newLogin");
         user.setName("new name");
@@ -93,16 +80,9 @@ public class UserControllerTest extends BaseControllerTest {
         user.setBirthday(LocalDate.now().minusDays(1));
 
         final String json = asJsonString(user);
-        result = this.mockMvc.perform(MockMvcRequestBuilders.put(endPoint)
+        this.mockMvc.perform(MockMvcRequestBuilders.put(endPoint)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
-                .andExpect(status().isOk())
-                .andReturn();
-
-        final String responseJson = result.getResponse().getContentAsString();
-        final User responseUser = objectMapper.readValue(responseJson, User.class);
-
-        assertEquals(user.getId(), responseUser.getId());
-        assertThat(user).usingRecursiveComparison().ignoringFields("id").isEqualTo(responseUser);
+                .andExpect(status().isOk());
     }
 }

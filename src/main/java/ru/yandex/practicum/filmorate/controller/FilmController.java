@@ -1,64 +1,76 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
 @Slf4j
 @RestController
 @RequestMapping("/films")
+@RequiredArgsConstructor
 public class FilmController {
-    private final Map<Integer, Film> films = new HashMap<>();
-    private int lastId = 0;
-
-    private int nextId() {
-        lastId++;
-        return lastId;
-    }
+    private final FilmService filmService;
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public Film add(@Valid @RequestBody Film newFilm) {
         log.info("POST /films");
-
-        final int newId = nextId();
-        newFilm.setId(newId);
-
-        films.put(newId, newFilm);
+        final int filmId = filmService.add(newFilm);
         log.info(String.format("Добавлен новый фильм %s", newFilm.getName()));
 
-        return newFilm;
+        return filmService.getById(filmId);
     }
 
     @PutMapping
     @ResponseStatus(HttpStatus.OK)
     public Film update(@Valid @RequestBody Film film) {
         log.info("PUT /films");
+        filmService.update(film);
+        log.info(String.format("Обновлена информация о фильме с id %s", film.getId()));
 
-        final int filmId = film.getId();
-        if (films.containsKey(filmId)) {
-            films.put(filmId, film);
-        } else {
-            throw new NotFoundException(String.format("Нет фильма с id = %s. Обновление не успешно.", filmId));
-        }
-
-        log.info(String.format("Обновлена информация о фильме с id %s", filmId));
-
-        return film;
+        return filmService.getById(film.getId());
     }
 
     @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public List<Film> getAll() {
         log.info("GET /films");
-        return films.values().stream().collect(Collectors.toUnmodifiableList());
+        return filmService.getAll();
+    }
+
+    @GetMapping("/{id}")
+    @ResponseStatus(HttpStatus.OK)
+    public Film getFilmById(@PathVariable(name = "id") int id) {
+        log.info(String.format("GET /films/{id}, {id} = %s", id));
+        return filmService.getById(id);
+    }
+
+
+    @PutMapping("/{id}/like/{userId}")
+    @ResponseStatus(HttpStatus.OK)
+    public void addLike(@PathVariable(name = "id") int id, @PathVariable(name = "userId") int userId) {
+        log.info(String.format("PUT /films/{id}/like/{userId}, {id} = %s, {userId} = %s", id, userId));
+        filmService.addLike(id, userId);
+    }
+
+    @DeleteMapping("/{id}/like/{userId}")
+    @ResponseStatus(HttpStatus.OK)
+    public void deleteLike(@PathVariable(name = "id") int id, @PathVariable(name = "userId") int userId) {
+        log.info(String.format("DELETE /films/{id}/like/{userId}, {id} = %s, {userId} = %s", id, userId));
+        filmService.deleteLike(id, userId);
+    }
+
+    @GetMapping("/popular")
+    @ResponseStatus(HttpStatus.OK)
+    public List<Film> getPopular(@RequestParam(name = "count") Optional<Integer> count) {
+        log.info(String.format("GET /films/popular?count={count}, {count} = %s", count.isPresent() ? count.get() : "не указан"));
+        return filmService.getPopular(count);
     }
 }

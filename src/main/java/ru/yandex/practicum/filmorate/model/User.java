@@ -1,9 +1,8 @@
 package ru.yandex.practicum.filmorate.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.extern.jackson.Jacksonized;
 import org.apache.commons.lang3.StringUtils;
 import ru.yandex.practicum.filmorate.validation.NoWhitespace;
 
@@ -14,8 +13,7 @@ import java.time.LocalDate;
 
 @Data
 @Builder
-@AllArgsConstructor
-@NoArgsConstructor
+@Jacksonized
 public class User {
     private int id;
     @Email(message = "Некорректный email")
