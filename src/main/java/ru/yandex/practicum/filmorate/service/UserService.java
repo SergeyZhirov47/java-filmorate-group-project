@@ -95,7 +95,7 @@ public class UserService {
     }
 
     private boolean isUserExists(int id) {
-        return userStorage.get(id).isPresent();
+        return userStorage.contains(id);
     }
 
     private void checkUserExistsWithException(int id, final String message) {
