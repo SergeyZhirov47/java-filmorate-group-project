@@ -13,7 +13,7 @@ public class InMemoryLikeStorage implements LikeStorage {
 
     @Override
     public void registerFilm(int filmId) {
-        if (!filmLikes.containsKey(filmId)) {
+        if (!filmContains(filmId)) {
             filmLikes.put(filmId, new HashSet<>());
         }
     }
@@ -32,7 +32,7 @@ public class InMemoryLikeStorage implements LikeStorage {
 
     @Override
     public void removeLike(int filmId, int userId) {
-        if (filmLikes.containsKey(filmId)) {
+        if (filmContains(filmId)) {
             filmLikes.get(filmId).remove(userId);
         }
     }
@@ -46,5 +46,9 @@ public class InMemoryLikeStorage implements LikeStorage {
                 .map(Map.Entry::getKey)
                 .limit(count)
                 .collect(Collectors.toUnmodifiableList());
+    }
+
+    private boolean filmContains(int id) {
+        return filmLikes.containsKey(id);
     }
 }
