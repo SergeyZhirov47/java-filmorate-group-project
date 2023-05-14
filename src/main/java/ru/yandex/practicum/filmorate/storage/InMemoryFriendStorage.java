@@ -42,7 +42,7 @@ public class InMemoryFriendStorage implements FriendStorage {
             return new ArrayList<>();
         }
 
-        return friends.get(userId).stream().collect(Collectors.toUnmodifiableList());
+        return userFriends.stream().collect(Collectors.toUnmodifiableList());
     }
 
     @Override
