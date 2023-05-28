@@ -1,9 +1,13 @@
 package ru.yandex.practicum.filmorate.service;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.common.ErrorMessageUtil;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.model.MPA;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.LikeStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -17,18 +21,15 @@ import java.util.stream.Collectors;
 import static java.util.stream.Collectors.toUnmodifiableList;
 
 @Service
+@RequiredArgsConstructor
 public class FilmService {
     protected final int defaultPopularLimit = 10;
-    protected FilmStorage filmStorage;
-    protected LikeStorage likeStorage;
-    protected UserStorage userStorage;
-
-    public FilmService(final FilmStorage filmStorage, final LikeStorage likeStorage, final UserStorage userStorage) {
-        this.filmStorage = filmStorage;
-        this.likeStorage = likeStorage;
-
-        this.userStorage = userStorage;
-    }
+    @Qualifier("filmDbStorage")
+    final protected FilmStorage filmStorage;
+    @Qualifier("likeDbStorage")
+    final protected LikeStorage likeStorage;
+    @Qualifier("userDbStorage")
+    final protected UserStorage userStorage;
 
     public int add(Film film) {
         final int filmId = filmStorage.add(film);
@@ -77,6 +78,34 @@ public class FilmService {
                 .collect(Collectors.toUnmodifiableList());
 
         return getFilmListByIds(popularFilmIds);
+    }
+
+    public List<Genre> getAllGenres() {
+        return filmStorage.getAllGenres();
+    }
+
+    public Genre getGenreById(int id) {
+        final Optional<Genre> genreOpt = filmStorage.getGenreById(id);
+
+        if (genreOpt.isEmpty()) {
+            throw new NotFoundException(String.format("Жанр с id = %s не найден", id));
+        }
+
+        return genreOpt.get();
+    }
+
+    public List<MPA> getAllMPARatings() {
+        return filmStorage.getAllMPARatings();
+    }
+
+    public MPA getMPARating(int id) {
+        final Optional<MPA> ratingOpt = filmStorage.getMPARatingById(id);
+
+        if (ratingOpt.isEmpty()) {
+            throw new NotFoundException(String.format("Рейтинг с id = %s не найден", id));
+        }
+
+        return ratingOpt.get();
     }
 
     private boolean isUserExists(int id) {

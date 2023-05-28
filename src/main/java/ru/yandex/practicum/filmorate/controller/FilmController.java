@@ -52,7 +52,6 @@ public class FilmController {
         return filmService.getById(id);
     }
 
-
     @PutMapping("/{id}/like/{userId}")
     @ResponseStatus(HttpStatus.OK)
     public void addLike(@PathVariable(name = "id") int id, @PathVariable(name = "userId") int userId) {

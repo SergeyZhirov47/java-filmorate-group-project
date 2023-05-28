@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.common.ErrorMessageUtil;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -14,7 +15,9 @@ import java.util.stream.Collectors;
 
 @Service
 public class UserService {
+    @Qualifier("userDbStorage")
     protected UserStorage userStorage;
+    @Qualifier("friendDbStorage")
     protected FriendStorage friendStorage;
 
     @Autowired
@@ -73,6 +76,8 @@ public class UserService {
         return getUserListByIds(friendIds);
     }
 
+    // ToDo
+    // это проще реализовать на уровне БД.
     public List<User> getCommonFriends(int userId, int otherUserId) {
         checkUserExists(userId);
         checkOtherUserExists(otherUserId);
@@ -88,10 +93,12 @@ public class UserService {
     }
 
     private List<User> getUserListByIds(final List<Integer> userIds) {
-        return userIds.stream().map(id -> userStorage.get(id))
+        return userStorage.get(userIds);
+
+       /* return userIds.stream().map(id -> userStorage.get(id))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
-                .collect(Collectors.toUnmodifiableList());
+                .collect(Collectors.toUnmodifiableList());*/
     }
 
     private boolean isUserExists(int id) {
