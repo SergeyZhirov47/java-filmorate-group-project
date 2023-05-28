@@ -1,10 +1,11 @@
-package ru.yandex.practicum.filmorate.storage;
+package ru.yandex.practicum.filmorate.storage.impl.inmemory;
 
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.common.ErrorMessageUtil;
 import ru.yandex.practicum.filmorate.common.IdGenerator;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +21,15 @@ public class InMemoryUserStorage implements UserStorage {
     @Override
     public Optional<User> get(int id) {
         return Optional.ofNullable(users.get(id));
+    }
+
+    @Override
+    public List<User> get(List<Integer> idList) {
+       final List<User> result = users.values().stream()
+               .filter(u -> idList.contains(u.getId()))
+               .collect(Collectors.toUnmodifiableList());
+
+       return result;
     }
 
     @Override
