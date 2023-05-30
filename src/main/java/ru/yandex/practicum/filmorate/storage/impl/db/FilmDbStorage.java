@@ -5,6 +5,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
@@ -45,7 +48,11 @@ public class FilmDbStorage implements FilmStorage {
     protected final MPAStorage mpaStorage;
 
     private final JdbcTemplate jdbcTemplate;
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final FilmRowMapper filmRowMapper = new FilmRowMapper();
+
+    // ToDo
+    // А вот поиск популярных фильмов теперь лучшее (по производительности) сделать здесь или в LikeStorage
 
     @Override
     public Optional<Film> get(int id) {
@@ -71,10 +78,9 @@ public class FilmDbStorage implements FilmStorage {
             return new ArrayList<>();
         }
 
-        final String idListString = idList.stream().map(String::valueOf).collect(joining(", "));
-        final String sql = SELECT_FILM + " WHERE f.\"id\" IN (?);";
-
-        final List<Film> films = jdbcTemplate.query(sql, filmRowMapper, idListString);
+        final String sql = SELECT_FILM + " WHERE f.\"id\" IN (:ids);";
+        final SqlParameterSource parameters = new MapSqlParameterSource("ids", idList);
+        final List<Film> films = namedParameterJdbcTemplate.query(sql, parameters, filmRowMapper);
 
         final Map<Integer, List<Genre>> filmsGenres = getFilmGenres(idList);
         films.forEach(f -> {
@@ -175,9 +181,6 @@ public class FilmDbStorage implements FilmStorage {
         return isExists;
     }
 
-    // ToDo
-    // А вот поиск популярных фильмов теперь лучшее (по производительности) сделать здесь или в LikeStorage
-
     private void checkFilmExists(int filmId) {
         if (!contains(filmId)) {
             throw new NotFoundException(ErrorMessageUtil.getNoFilmWithIdMessage(filmId));
@@ -234,41 +237,37 @@ public class FilmDbStorage implements FilmStorage {
 
     private Map<Integer, List<Genre>> getFilmGenres() {
         final String sql = SELECT_FILM_GENRES + ";";
-        return getFilmGenres(sql);
+        return jdbcTemplate.query(sql, this::extractFilmGenres);
     }
 
     private Map<Integer, List<Genre>> getFilmGenres(final List<Integer> filmIds) {
         if (filmIds.isEmpty()) {
             return new HashMap<>();
         }
-        final String sql = SELECT_FILM_GENRES + " WHERE f.\"id\" IN (?);";
-        final String idListString = filmIds.stream().map(String::valueOf).collect(joining(", "));
+        final String sql = SELECT_FILM_GENRES + " WHERE f.\"id\" IN (:ids);";
+        final SqlParameterSource parameters = new MapSqlParameterSource("ids", filmIds);
 
-        return getFilmGenres(sql, idListString);
+        return namedParameterJdbcTemplate.query(sql, parameters, this::extractFilmGenres);
     }
 
-    private Map<Integer, List<Genre>> getFilmGenres(final String sql, Object... args) {
-        final Map<Integer, List<Genre>> filmsGenres = jdbcTemplate.query(sql, rs -> {
-            final Map<Integer, List<Genre>> resultMap = new HashMap<>();
+    private Map<Integer, List<Genre>> extractFilmGenres(final ResultSet rs) throws SQLException {
+        final Map<Integer, List<Genre>> resultMap = new HashMap<>();
 
-            while (rs.next()) {
-                int filmId = rs.getInt("id_film");
-                final Genre genre = getGenreFromResultSet(rs);
+        while (rs.next()) {
+            int filmId = rs.getInt("id_film");
+            final Genre genre = getGenreFromResultSet(rs);
 
-                // если жанров у фильма нет, то должен быть пустой список
-                if (!resultMap.containsKey(filmId)) {
-                    resultMap.put(filmId, new ArrayList<>());
-                }
-
-                if (nonNull(genre)) {
-                    resultMap.get(filmId).add(genre);
-                }
+            // если жанров у фильма нет, то должен быть пустой список
+            if (!resultMap.containsKey(filmId)) {
+                resultMap.put(filmId, new ArrayList<>());
             }
 
-            return resultMap;
-        }, args);
+            if (nonNull(genre)) {
+                resultMap.get(filmId).add(genre);
+            }
+        }
 
-        return filmsGenres;
+        return resultMap;
     }
 
     private Genre getGenreFromResultSet(final ResultSet rs) throws SQLException {

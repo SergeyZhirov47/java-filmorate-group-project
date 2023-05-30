@@ -4,6 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
@@ -18,7 +21,6 @@ import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Component
 @Qualifier("userDbStorage")
@@ -27,6 +29,7 @@ public class UserDbStorage implements UserStorage {
     private final static String SELECT_USER = "SELECT \"id\", \"email\", \"login\", \"name\", \"birthday\"\n" +
             "FROM \"users\"";
     private final JdbcTemplate jdbcTemplate;
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final UserRowMapper userRowMapper = new UserRowMapper();
 
     @Override
@@ -34,8 +37,7 @@ public class UserDbStorage implements UserStorage {
         User user;
         try {
             user = jdbcTemplate.queryForObject(SELECT_USER + " WHERE id = ?;", userRowMapper, id);
-        }
-        catch (EmptyResultDataAccessException exp) {
+        } catch (EmptyResultDataAccessException exp) {
             user = null;
         }
 
@@ -48,10 +50,10 @@ public class UserDbStorage implements UserStorage {
             return new ArrayList<>();
         }
 
-        final String idListString = idList.stream().map(String::valueOf).collect(Collectors.joining(", "));
-        final String sql = SELECT_USER + " WHERE id IN (" + idListString + ");";
+        final String sql = SELECT_USER + " WHERE id IN (:ids);";
+        final SqlParameterSource parameters = new MapSqlParameterSource("ids", idList);
 
-        final List<User> users = jdbcTemplate.query(sql, userRowMapper);
+        final List<User> users = namedParameterJdbcTemplate.query(sql, parameters, userRowMapper);
         return users;
     }
 

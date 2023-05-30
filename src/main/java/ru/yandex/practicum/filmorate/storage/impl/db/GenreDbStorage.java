@@ -4,6 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.common.mappers.GenreRowMapper;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -13,8 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static java.util.stream.Collectors.joining;
-
 @Component
 @Qualifier("genreDbStorage")
 @RequiredArgsConstructor
@@ -22,6 +23,7 @@ public class GenreDbStorage implements GenreStorage {
     private final static String SELECT_GENRE = "SELECT id, name FROM \"genres\"";
 
     private final JdbcTemplate jdbcTemplate;
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final GenreRowMapper genreRowMapper = new GenreRowMapper();
 
     @Override
@@ -31,8 +33,7 @@ public class GenreDbStorage implements GenreStorage {
         Genre genre;
         try {
             genre = jdbcTemplate.queryForObject(sql, genreRowMapper, id);
-        }
-        catch (EmptyResultDataAccessException exp) {
+        } catch (EmptyResultDataAccessException exp) {
             genre = null;
         }
 
@@ -45,10 +46,10 @@ public class GenreDbStorage implements GenreStorage {
             return new ArrayList<>();
         }
 
-        final String idString = idList.stream().map(String::valueOf).collect(joining(", "));
-        final String sql = SELECT_GENRE + " WHERE id iN (?);";
+        final String sql = SELECT_GENRE + " WHERE id iN (:ids);";
+        final SqlParameterSource parameters = new MapSqlParameterSource("ids", idList);
 
-        final List<Genre> genres = jdbcTemplate.query(sql, genreRowMapper, idString);
+        final List<Genre> genres = namedParameterJdbcTemplate.query(sql, parameters, genreRowMapper);
         return genres;
     }
 
