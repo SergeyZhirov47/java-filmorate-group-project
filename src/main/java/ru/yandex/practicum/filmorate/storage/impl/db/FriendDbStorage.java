@@ -57,7 +57,7 @@ public class FriendDbStorage implements FriendStorage {
         final String sql = "SELECT EXISTS(SELECT id " +
                 "FROM \"friendship\" " +
                 "WHERE id_user = ? AND id_friend = ?);";
-        boolean isExists = jdbcTemplate.queryForObject(sql, Boolean.class, userId, friendId);
+        final Boolean isExists = jdbcTemplate.queryForObject(sql, Boolean.class, userId, friendId);
         return isExists;
     }
 

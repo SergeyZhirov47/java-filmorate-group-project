@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage.impl.db;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -29,7 +30,14 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public Optional<User> get(int id) {
-        final User user = jdbcTemplate.queryForObject(SELECT_USER + " WHERE id = ?;", userRowMapper, id);
+        User user;
+        try {
+            user = jdbcTemplate.queryForObject(SELECT_USER + " WHERE id = ?;", userRowMapper, id);
+        }
+        catch (EmptyResultDataAccessException exp) {
+            user = null;
+        }
+
         return Optional.ofNullable(user);
     }
 
@@ -47,7 +55,7 @@ public class UserDbStorage implements UserStorage {
         final String sqlQuery = "INSERT INTO \"users\" (\"email\", \"login\", \"name\", \"birthday\")\n" +
                 "VALUES(?, ?, ?, ?);";
 
-        KeyHolder keyHolder = new GeneratedKeyHolder();
+        final KeyHolder keyHolder = new GeneratedKeyHolder();
 
         jdbcTemplate.update(connection -> {
             PreparedStatement stmt = connection.prepareStatement(sqlQuery, new String[]{"id"});
@@ -95,7 +103,7 @@ public class UserDbStorage implements UserStorage {
         final String sql = "SELECT EXISTS(SELECT id " +
                 "FROM \"users\" " +
                 "WHERE id = ?);";
-        boolean isExists = jdbcTemplate.queryForObject(sql, Boolean.class, id);
+        final Boolean isExists = jdbcTemplate.queryForObject(sql, Boolean.class, id);
         return isExists;
     }
 

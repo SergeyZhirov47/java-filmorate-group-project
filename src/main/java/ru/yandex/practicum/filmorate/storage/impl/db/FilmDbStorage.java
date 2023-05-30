@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage.impl.db;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -49,7 +50,12 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Optional<Film> get(int id) {
-        final Film film = jdbcTemplate.queryForObject(SELECT_FILM_BY_ID + ";", filmRowMapper, id);
+        Film film;
+        try {
+           film = jdbcTemplate.queryForObject(SELECT_FILM_BY_ID + ";", filmRowMapper, id);
+        } catch (EmptyResultDataAccessException exp) {
+            film = null;
+        }
 
         // еще нужно достать жанры
         if (nonNull(film)) {
@@ -141,7 +147,7 @@ public class FilmDbStorage implements FilmStorage {
         final String sql = "SELECT EXISTS(SELECT f.id " +
                 "FROM \"films\" f " +
                 "WHERE f.id = ?);";
-        boolean isExists = jdbcTemplate.queryForObject(sql, Boolean.class, id);
+        final Boolean isExists = jdbcTemplate.queryForObject(sql, Boolean.class, id);
         return isExists;
     }
 
@@ -199,7 +205,7 @@ public class FilmDbStorage implements FilmStorage {
             return resultList;
         }, filmId);
 
-        return filmGenres.isEmpty() ? null : filmGenres;
+        return (isNull(filmGenres) || filmGenres.isEmpty()) ? null : filmGenres;
     }
 
     private Map<Integer, List<Genre>> getFilmGenres() {
@@ -250,7 +256,7 @@ public class FilmDbStorage implements FilmStorage {
     private void checkGenresExists(final Film film) {
         if (nonNull(film.getGenres())) {
             final List<Integer> genresListIds = film.getGenres().stream().map(Genre::getId).collect(toUnmodifiableList());
-            boolean genresNotExists = !genreStorage.getGenreById(genresListIds).isEmpty();
+            boolean genresNotExists = genreStorage.getGenreById(genresListIds).isEmpty();
             if (genresNotExists) {
                 throw new IllegalArgumentException(String.format("Не существует жанра/жанров с id из списка %s", genresListIds.stream().map(String::valueOf).collect(joining(", "))));
             }

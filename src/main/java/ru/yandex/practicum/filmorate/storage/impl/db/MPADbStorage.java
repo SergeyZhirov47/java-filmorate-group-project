@@ -2,6 +2,7 @@ package ru.yandex.practicum.filmorate.storage.impl.db;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.common.mappers.MPARatingRowMapper;
@@ -23,7 +24,15 @@ public class MPADbStorage implements MPAStorage {
     @Override
     public Optional<MPA> getMPARatingById(int id) {
         final String sql = SELECT_MPA_RATING + " WHERE id = ?;";
-        final MPA rating = jdbcTemplate.queryForObject(sql, ratingRowMapper, id);
+
+        MPA rating;
+        try {
+            rating = jdbcTemplate.queryForObject(sql, ratingRowMapper, id);
+        }
+        catch (EmptyResultDataAccessException exp) {
+            rating = null;
+        }
+
         return Optional.ofNullable(rating);
     }
 
