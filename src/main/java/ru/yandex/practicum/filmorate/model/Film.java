@@ -26,5 +26,4 @@ public class Film {
     private int duration;
     private List<Genre> genres;
     private MPA rating;
-
 }
