@@ -27,7 +27,7 @@ public class LikeDbStorage implements LikeStorage {
         // ToDo
         // Если лайк уже есть, то ничего не делаем.
         final String sql = "INSERT INTO \"likes\"\n" +
-                "(\"id_user\", \"id_film\")\n" +
+                "(\"id_film\", \"id_user\")\n" +
                 "VALUES(? , ?);";
 
         jdbcTemplate.update(sql, filmId, userId);
@@ -36,7 +36,7 @@ public class LikeDbStorage implements LikeStorage {
     @Override
     public void removeLike(int filmId, int userId) {
         final String sql = "DELETE FROM \"likes\"\n" +
-                "WHERE id_film = ? AND userId = ?;";
+                "WHERE id_film = ? AND id_user = ?;";
 
         jdbcTemplate.update(sql, filmId, userId);
     }
