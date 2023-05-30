@@ -15,6 +15,7 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -42,7 +43,11 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public List<User> get(List<Integer> idList) {
+    public List<User> get(final List<Integer> idList) {
+        if (idList.isEmpty()) {
+            return new ArrayList<>();
+        }
+
         final String idListString = idList.stream().map(String::valueOf).collect(Collectors.joining(", "));
         final String sql = SELECT_USER + " WHERE id IN (" + idListString + ");";
 

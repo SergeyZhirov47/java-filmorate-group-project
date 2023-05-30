@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.common.mappers.GenreRowMapper;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -39,7 +40,11 @@ public class GenreDbStorage implements GenreStorage {
     }
 
     @Override
-    public List<Genre> getGenreById(List<Integer> idList) {
+    public List<Genre> getGenreById(final List<Integer> idList) {
+        if (idList.isEmpty()) {
+            return new ArrayList<>();
+        }
+
         final String idString = idList.stream().map(String::valueOf).collect(joining(", "));
         final String sql = SELECT_GENRE + " WHERE id iN (?);";
 
