@@ -141,11 +141,5 @@ public class FilmService {
 
     private List<Film> getFilmListByIds(final List<Integer> filmIds) {
         return filmStorage.get(filmIds);
-        /*
-        return filmIds.stream().map(id -> filmStorage.get(id))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(toUnmodifiableList());
-         */
     }
 }
