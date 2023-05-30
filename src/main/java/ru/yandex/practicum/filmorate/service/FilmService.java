@@ -8,9 +8,7 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.MPA;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.LikeStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.*;
 
 import java.util.Comparator;
 import java.util.List;
@@ -24,14 +22,25 @@ import static java.util.stream.Collectors.toUnmodifiableList;
 @RequiredArgsConstructor
 public class FilmService {
     protected final int defaultPopularLimit = 10;
+
     @Qualifier("filmDbStorage")
-    final protected FilmStorage filmStorage;
+    protected final FilmStorage filmStorage;
     @Qualifier("likeDbStorage")
-    final protected LikeStorage likeStorage;
+    protected final LikeStorage likeStorage;
     @Qualifier("userDbStorage")
-    final protected UserStorage userStorage;
+    protected final UserStorage userStorage;
+
+    @Qualifier("genreDbStorage")
+    final protected GenreStorage genreStorage;
+    @Qualifier("mpaDbStorage")
+    final protected MPAStorage mpaStorage;
 
     public int add(Film film) {
+        // ToDo
+        // в сервисе должна происходить проверка того что рейтинг и жанр существуют?
+        // если взять метод getById, то почему должен возвращаться недоделанный объект. откуда мы это знаем?
+        // с другой стороны вынос этих проверок в storage не будет ли выносом бизнес логики?
+
         final int filmId = filmStorage.add(film);
         likeStorage.registerFilm(filmId);
 
@@ -81,11 +90,11 @@ public class FilmService {
     }
 
     public List<Genre> getAllGenres() {
-        return filmStorage.getAllGenres();
+        return genreStorage.getAllGenres();
     }
 
     public Genre getGenreById(int id) {
-        final Optional<Genre> genreOpt = filmStorage.getGenreById(id);
+        final Optional<Genre> genreOpt = genreStorage.getGenreById(id);
 
         if (genreOpt.isEmpty()) {
             throw new NotFoundException(String.format("Жанр с id = %s не найден", id));
@@ -95,11 +104,11 @@ public class FilmService {
     }
 
     public List<MPA> getAllMPARatings() {
-        return filmStorage.getAllMPARatings();
+        return mpaStorage.getAllMPARatings();
     }
 
     public MPA getMPARating(int id) {
-        final Optional<MPA> ratingOpt = filmStorage.getMPARatingById(id);
+        final Optional<MPA> ratingOpt = mpaStorage.getMPARatingById(id);
 
         if (ratingOpt.isEmpty()) {
             throw new NotFoundException(String.format("Рейтинг с id = %s не найден", id));

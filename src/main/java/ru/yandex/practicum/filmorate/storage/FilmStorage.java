@@ -22,12 +22,4 @@ public interface FilmStorage {
     List<Film> getAll();
 
     boolean contains(int id);
-
-    Optional<Genre> getGenreById(int id);
-
-    List<Genre> getAllGenres();
-
-    Optional<MPA> getMPARatingById(int id);
-
-    List<MPA> getAllMPARatings();
 }

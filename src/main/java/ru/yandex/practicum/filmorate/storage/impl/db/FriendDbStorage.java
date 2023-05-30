@@ -9,13 +9,14 @@ import ru.yandex.practicum.filmorate.storage.FriendStorage;
 import java.util.List;
 
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
 @Component
 @Qualifier("friendDbStorage")
 @RequiredArgsConstructor
 public class FriendDbStorage implements FriendStorage {
     private final JdbcTemplate jdbcTemplate;
-    // private final UserRowMapper userRowMapper = new UserRowMapper();
+    private final static String SELECT_FRIENDS = "SELECT id_friend FROM friendship WHERE id_user = ? AND is_accepted = TRUE";
 
     @Override
     public void addFriend(int userId, int friendId) {
@@ -34,17 +35,12 @@ public class FriendDbStorage implements FriendStorage {
 
     @Override
     public List<Integer> getFriends(int userId) {
-        // неважно принял другой пользователь дружбу или нет
-        final String sql = "SELECT id_friend " +
-                "FROM friendship " +
-                "WHERE id_user = ?";
-
         // ToDo
         // 1. или тут нужно возвращать список пользователей, а не id
         // 2. или в UserStorage сделать метод, который по списку id сразу список пользователей возвращать, а не как сейчас по одному доставать
         // final List<User> userFriends = jdbcTemplate.query(sql, userRowMapper);
 
-        final List<Integer> userFriends = jdbcTemplate.queryForList(sql, Integer.class, userId);
+        final List<Integer> userFriends = jdbcTemplate.queryForList(SELECT_FRIENDS + ";", Integer.class, userId);
         return userFriends;
     }
 
@@ -52,9 +48,9 @@ public class FriendDbStorage implements FriendStorage {
     // getCommonFriends
     // т.е список общих друзей проще получить тут или в UserStorage
     private List<Integer> getCommonFriends(int userId, int otherUserId) {
-        final String sql = "SELECT id_friend FROM friendship WHERE id_user = ?" +
+        final String sql = SELECT_FRIENDS +
                 "UNION " +
-                "SELECT id_friend FROM friendship WHERE id_user = ?";
+                SELECT_FRIENDS + ";";
 
         final List<Integer> commonFriends = jdbcTemplate.queryForList(sql, Integer.class, userId, otherUserId);
         return commonFriends;
@@ -66,7 +62,7 @@ public class FriendDbStorage implements FriendStorage {
                 "WHERE id_user = ? AND id_friend = ?";
         final Integer friendshipId = jdbcTemplate.queryForObject(sql, Integer.class, userId, friendId);
 
-        return !isNull(friendshipId);
+        return nonNull(friendshipId);
     }
 
     private void addFriendOneWay(int userId, int friendId, boolean isAccepted) {

@@ -2,23 +2,21 @@ package ru.yandex.practicum.filmorate.common.mappers;
 
 import org.springframework.jdbc.core.RowMapper;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.MPA;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static java.util.Objects.isNull;
 
 public class FilmRowMapper implements RowMapper<Film> {
     @Override
     public Film mapRow(ResultSet rs, int rowNum) throws SQLException {
-        List<String> genres = null;
-
-        final String genreColumnValue = rs.getString("genre");
-        if (!isNull(genreColumnValue)) {
-            genres = Arrays.stream(genreColumnValue.split(",")).map(String::trim).collect(Collectors.toUnmodifiableList());
+        MPA rating = null;
+        int ratingId = rs.getInt("id_rating");
+        if (!rs.wasNull()) {
+            rating = MPA.builder()
+                    .id(ratingId)
+                    .name(rs.getString("name_rating"))
+                    .build();
         }
 
         final Film film = Film.builder()
@@ -27,8 +25,7 @@ public class FilmRowMapper implements RowMapper<Film> {
                 .description(rs.getString("description"))
                 .releaseDate(rs.getDate("release_date").toLocalDate())
                 .duration(rs.getInt("duration"))
-                .genres(genres)
-                .rating(rs.getString("rating"))
+                .rating(rating)
                 .build();
 
         return film;

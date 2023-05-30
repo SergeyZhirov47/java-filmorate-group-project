@@ -18,8 +18,8 @@ public class LikeDbStorage implements LikeStorage {
 
     @Override
     public void registerFilm(int filmId) {
-        // ToDo
-        // Теперь этот метод не нужен?
+        // Теперь этот метод не нужен. А он в интерфейсе...
+        // throw new UnsupportedOperationException("do nothing in this implementation");
     }
 
     @Override
