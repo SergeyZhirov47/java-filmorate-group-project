@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
 @Component
 @Qualifier("userDbStorage")
@@ -99,7 +99,7 @@ public class UserDbStorage implements UserStorage {
                 "WHERE id = ?";
         final Integer userId = jdbcTemplate.queryForObject(sql, Integer.class, id);
 
-        return !isNull(userId);
+        return nonNull(userId);
     }
 
     private void checkUserExists(int userId) {
