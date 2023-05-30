@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.model;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
 import lombok.extern.jackson.Jacksonized;
@@ -25,5 +26,6 @@ public class Film {
     @Positive(message = "Продолжительность фильма должна быть больше нуля")
     private int duration;
     private List<Genre> genres;
+    @JsonProperty("mpa")
     private MPA rating;
 }
