@@ -18,27 +18,25 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static java.util.Objects.nonNull;
-
 @Component
 @Qualifier("userDbStorage")
 @RequiredArgsConstructor
 public class UserDbStorage implements UserStorage {
+    private final static String SELECT_USER = "SELECT \"id\", \"email\", \"login\", \"name\", \"birthday\"\n" +
+            "FROM \"users\"";
     private final JdbcTemplate jdbcTemplate;
     private final UserRowMapper userRowMapper = new UserRowMapper();
-    private final String selectUserBase = "SELECT \"id\", \"email\", \"login\", \"name\", \"birthday\"\n" +
-            "FROM \"users\";";
 
     @Override
     public Optional<User> get(int id) {
-        final User user = jdbcTemplate.queryForObject(selectUserBase + " WHERE id = ?", userRowMapper, id);
+        final User user = jdbcTemplate.queryForObject(SELECT_USER + " WHERE id = ?;", userRowMapper, id);
         return Optional.ofNullable(user);
     }
 
     @Override
     public List<User> get(List<Integer> idList) {
         final String idListString = idList.stream().map(String::valueOf).collect(Collectors.joining(", "));
-        final String sql = selectUserBase + " WHERE id IN (" + idListString + ")";
+        final String sql = SELECT_USER + " WHERE id IN (" + idListString + ");";
 
         final List<User> users = jdbcTemplate.query(sql, userRowMapper);
         return users;
@@ -88,18 +86,17 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public List<User> getAll() {
-        final List<User> users = jdbcTemplate.query(selectUserBase, userRowMapper);
+        final List<User> users = jdbcTemplate.query(SELECT_USER + ";", userRowMapper);
         return users;
     }
 
     @Override
     public boolean contains(int id) {
-        final String sql = "SELECT id " +
+        final String sql = "SELECT EXISTS(SELECT id " +
                 "FROM \"users\" " +
-                "WHERE id = ?";
-        final Integer userId = jdbcTemplate.queryForObject(sql, Integer.class, id);
-
-        return nonNull(userId);
+                "WHERE id = ?);";
+        boolean isExists = jdbcTemplate.queryForObject(sql, Boolean.class, id);
+        return isExists;
     }
 
     private void checkUserExists(int userId) {

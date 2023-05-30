@@ -138,12 +138,11 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public boolean contains(int id) {
-        final String sql = "SELECT f.id " +
+        final String sql = "SELECT EXISTS(SELECT f.id " +
                 "FROM \"films\" f " +
-                "WHERE f.id = ?";
-        final Integer filmId = jdbcTemplate.queryForObject(sql, Integer.class, id);
-
-        return nonNull(filmId);
+                "WHERE f.id = ?);";
+        boolean isExists = jdbcTemplate.queryForObject(sql, Boolean.class, id);
+        return isExists;
     }
 
     // ToDo
@@ -241,7 +240,7 @@ public class FilmDbStorage implements FilmStorage {
     private void checkRatingExists(final Film film) {
         if (nonNull(film.getRating())) {
             int ratingId = film.getRating().getId();
-            boolean ratingNotExists = mpaStorage.getMPARatingById(ratingId).isEmpty(); // isRatingExists(ratingId);
+            boolean ratingNotExists = mpaStorage.getMPARatingById(ratingId).isEmpty();
             if (ratingNotExists) {
                 throw new IllegalArgumentException(String.format("Не существует рейтинга с id = %s", ratingId));
             }

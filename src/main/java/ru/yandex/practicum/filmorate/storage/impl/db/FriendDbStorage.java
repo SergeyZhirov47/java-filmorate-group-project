@@ -8,15 +8,12 @@ import ru.yandex.practicum.filmorate.storage.FriendStorage;
 
 import java.util.List;
 
-import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
-
 @Component
 @Qualifier("friendDbStorage")
 @RequiredArgsConstructor
 public class FriendDbStorage implements FriendStorage {
-    private final JdbcTemplate jdbcTemplate;
     private final static String SELECT_FRIENDS = "SELECT id_friend FROM friendship WHERE id_user = ? AND is_accepted = TRUE";
+    private final JdbcTemplate jdbcTemplate;
 
     @Override
     public void addFriend(int userId, int friendId) {
@@ -57,12 +54,11 @@ public class FriendDbStorage implements FriendStorage {
     }
 
     private boolean contains(int userId, int friendId) {
-        final String sql = "SELECT id " +
+        final String sql = "SELECT EXISTS(SELECT id " +
                 "FROM \"friendship\" " +
-                "WHERE id_user = ? AND id_friend = ?";
-        final Integer friendshipId = jdbcTemplate.queryForObject(sql, Integer.class, userId, friendId);
-
-        return nonNull(friendshipId);
+                "WHERE id_user = ? AND id_friend = ?);";
+        boolean isExists = jdbcTemplate.queryForObject(sql, Boolean.class, userId, friendId);
+        return isExists;
     }
 
     private void addFriendOneWay(int userId, int friendId, boolean isAccepted) {

@@ -36,9 +36,6 @@ public class GenreDbStorage implements GenreStorage {
 
         final List<Genre> genres = jdbcTemplate.query(sql, genreRowMapper, idString);
         return genres;
-
-        // throw new UnsupportedOperationException("not implemented!");
-        // return null;
     }
 
     @Override
