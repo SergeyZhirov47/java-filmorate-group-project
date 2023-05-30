@@ -43,9 +43,11 @@ public class LikeDbStorage implements LikeStorage {
 
     @Override
     public Map<Integer, Integer> getFilmLikes() {
-        final String sql = " SELECT \"id_film\", COUNT(\"id_user\") as likesCount \n" +
-                "FROM \"likes\"\n" +
-                "GROUP BY \"id_film\"";
+        final String sql = "SELECT f.\"id\" as id_film, COUNT(l.\"id_user\") AS likesCount\n" +
+                "FROM \"films\" f \n" +
+                "LEFT JOIN \"likes\" l ON l.\"id_film\" = f.\"id\" \n" +
+                "GROUP BY f.\"id\" \n" +
+                "ORDER BY likesCount DESC;";
 
         final Map<Integer, Integer> allFilmsLikes = jdbcTemplate.query(sql, (ResultSetExtractor<Map<Integer, Integer>>) rs -> {
             final HashMap<Integer, Integer> resultMap = new HashMap<>();

@@ -28,6 +28,15 @@ public class InMemoryFilmStorage implements FilmStorage {
     }
 
     @Override
+    public List<Film> get(List<Integer> idList) {
+        final List<Film> result = films.values().stream()
+                .filter(f -> idList.contains(f.getId()))
+                .collect(Collectors.toUnmodifiableList());
+
+        return result;
+    }
+
+    @Override
     public List<Film> getAll() {
         return films.values().stream().collect(Collectors.toUnmodifiableList());
     }

@@ -16,8 +16,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static java.util.stream.Collectors.toUnmodifiableList;
-
 @Service
 @RequiredArgsConstructor
 public class FilmService {
@@ -76,6 +74,8 @@ public class FilmService {
         likeStorage.removeLike(filmId, userId);
     }
 
+    // ToDo
+    // проще и производительнее на уровне БД реализовать (т.е в LikesStorage)
     public List<Film> getPopular(final Optional<Integer> count) {
         int finalCount = count.or(() -> Optional.of(defaultPopularLimit)).get();
 
@@ -140,9 +140,12 @@ public class FilmService {
     }
 
     private List<Film> getFilmListByIds(final List<Integer> filmIds) {
+        return filmStorage.get(filmIds);
+        /*
         return filmIds.stream().map(id -> filmStorage.get(id))
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(toUnmodifiableList());
+         */
     }
 }

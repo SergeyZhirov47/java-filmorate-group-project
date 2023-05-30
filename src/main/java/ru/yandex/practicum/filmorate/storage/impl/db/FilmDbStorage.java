@@ -18,8 +18,7 @@ import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.MPAStorage;
 
 import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.*;
 
 import static java.util.Objects.isNull;
@@ -52,7 +51,7 @@ public class FilmDbStorage implements FilmStorage {
     public Optional<Film> get(int id) {
         Film film;
         try {
-           film = jdbcTemplate.queryForObject(SELECT_FILM_BY_ID + ";", filmRowMapper, id);
+            film = jdbcTemplate.queryForObject(SELECT_FILM_BY_ID + ";", filmRowMapper, id);
         } catch (EmptyResultDataAccessException exp) {
             film = null;
         }
@@ -64,6 +63,26 @@ public class FilmDbStorage implements FilmStorage {
         }
 
         return Optional.ofNullable(film);
+    }
+
+    @Override
+    public List<Film> get(final List<Integer> idList) {
+        if (idList.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        final String idListString = idList.stream().map(String::valueOf).collect(joining(", "));
+        final String sql = SELECT_FILM + " WHERE f.\"id\" IN (?);";
+
+        final List<Film> films = jdbcTemplate.query(sql, filmRowMapper, idListString);
+
+        final Map<Integer, List<Genre>> filmsGenres = getFilmGenres(idList);
+        films.forEach(f -> {
+            int filmId = f.getId();
+            f.setGenres(filmsGenres.get(filmId));
+        });
+
+        return films;
     }
 
     @Override
@@ -88,15 +107,20 @@ public class FilmDbStorage implements FilmStorage {
                 "VALUES (?, ?, ?, ?, ?)";
 
         final KeyHolder keyHolder = new GeneratedKeyHolder();
-        final Integer ratingId = isNull(film.getRating()) ? null : film.getRating().getId();
 
         jdbcTemplate.update(connection -> {
-            PreparedStatement stmt = connection.prepareStatement(insertFilmSql, new String[]{"id"});
+            final PreparedStatement stmt = connection.prepareStatement(insertFilmSql, new String[]{"id"});
             stmt.setString(1, film.getName());
             stmt.setString(2, film.getDescription());
             stmt.setDate(3, Date.valueOf(film.getReleaseDate()));
             stmt.setInt(4, film.getDuration());
-            stmt.setInt(5, ratingId);
+
+            if (nonNull(film.getRating())) {
+                stmt.setInt(5, film.getRating().getId());
+            } else {
+                stmt.setNull(5, Types.INTEGER);
+            }
+
             return stmt;
         }, keyHolder);
 
@@ -194,51 +218,71 @@ public class FilmDbStorage implements FilmStorage {
             final List<Genre> resultList = new ArrayList<>();
 
             while (rs.next()) {
-                final Genre genre = Genre.builder()
-                        .id(rs.getInt("id_genre"))
-                        .name(rs.getString("name_genre"))
-                        .build();
+                final Genre genre = getGenreFromResultSet(rs);
 
-                resultList.add(genre);
+                if (nonNull(genre)) {
+                    resultList.add(genre);
+                }
             }
 
             return resultList;
         }, filmId);
 
-        return (isNull(filmGenres) || filmGenres.isEmpty()) ? null : filmGenres;
+        // если жанров у фильма нет, то должен быть пустой список
+        return Objects.requireNonNullElse(filmGenres, Collections.emptyList());
     }
 
     private Map<Integer, List<Genre>> getFilmGenres() {
-        final Map<Integer, List<Genre>> filmsGenres = jdbcTemplate.query(SELECT_FILM_GENRES + ";", rs -> {
+        final String sql = SELECT_FILM_GENRES + ";";
+        return getFilmGenres(sql);
+    }
+
+    private Map<Integer, List<Genre>> getFilmGenres(final List<Integer> filmIds) {
+        if (filmIds.isEmpty()) {
+            return new HashMap<>();
+        }
+        final String sql = SELECT_FILM_GENRES + " WHERE f.\"id\" IN (?);";
+        final String idListString = filmIds.stream().map(String::valueOf).collect(joining(", "));
+
+        return getFilmGenres(sql, idListString);
+    }
+
+    private Map<Integer, List<Genre>> getFilmGenres(final String sql, Object... args) {
+        final Map<Integer, List<Genre>> filmsGenres = jdbcTemplate.query(sql, rs -> {
             final Map<Integer, List<Genre>> resultMap = new HashMap<>();
 
             while (rs.next()) {
                 int filmId = rs.getInt("id_film");
+                final Genre genre = getGenreFromResultSet(rs);
 
-                Genre genre = null;
-                int genreId = rs.getInt("id_genre");
-                if (!rs.wasNull()) {
-                    genre = Genre.builder()
-                            .id(genreId)
-                            .name(rs.getString("name_genre"))
-                            .build();
+                // если жанров у фильма нет, то должен быть пустой список
+                if (!resultMap.containsKey(filmId)) {
+                    resultMap.put(filmId, new ArrayList<>());
                 }
 
                 if (nonNull(genre)) {
-                    if (resultMap.containsKey(filmId)) {
-                        resultMap.get(filmId).add(genre);
-                    } else {
-                        final List<Genre> genres = new ArrayList<>();
-                        genres.add(genre);
-                        resultMap.put(filmId, genres);
-                    }
+                    resultMap.get(filmId).add(genre);
                 }
             }
 
             return resultMap;
-        });
+        }, args);
 
         return filmsGenres;
+    }
+
+    private Genre getGenreFromResultSet(final ResultSet rs) throws SQLException {
+        Genre genre = null;
+
+        int genreId = rs.getInt("id_genre");
+        if (!rs.wasNull()) {
+            genre = Genre.builder()
+                    .id(genreId)
+                    .name(rs.getString("name_genre"))
+                    .build();
+        }
+
+        return genre;
     }
 
     // ToDo
