@@ -7,6 +7,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
 @Component
 public class InMemoryFriendStorage implements FriendStorage {
@@ -25,12 +26,12 @@ public class InMemoryFriendStorage implements FriendStorage {
     @Override
     public void deleteFriend(int userId, int friendId) {
         final Set<Integer> userFriends = friends.get(userId);
-        if (!isNull(userFriends)) {
+        if (nonNull(userFriends)) {
             userFriends.remove(friendId);
         }
 
         final Set<Integer> friendFriends = friends.get(friendId);
-        if (!isNull(friendFriends)) {
+        if (nonNull(friendFriends)) {
             friendFriends.remove(userId);
         }
     }

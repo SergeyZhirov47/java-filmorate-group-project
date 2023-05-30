@@ -9,7 +9,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
 
 @Component
 public class InMemoryLikeStorage implements LikeStorage {
@@ -25,7 +25,7 @@ public class InMemoryLikeStorage implements LikeStorage {
     @Override
     public void addLike(int filmId, int userId) {
         final Set<Integer> userHowLikes = filmLikes.get(filmId);
-        if (!isNull(userHowLikes)) {
+        if (nonNull(userHowLikes)) {
             userHowLikes.add(userId);
         } else {
             final Set<Integer> usersHowLikes = new HashSet<>();
