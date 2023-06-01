@@ -1,11 +1,10 @@
-/*
-DROP TABLE "films";
-DROP TABLE "users";
 
-DROP TABLE "friendship";
-DROP TABLE "film_genre";
-DROP TABLE "likes;
-*/
+DROP TABLE IF EXISTS "film_genre";
+DROP TABLE IF EXISTS "likes";
+DROP TABLE IF EXISTS "friendship";
+
+DROP TABLE IF EXISTS "films";
+DROP TABLE IF EXISTS "users";
 
 CREATE TABLE IF NOT EXISTS "genres" (
   "id" INTEGER PRIMARY KEY,
