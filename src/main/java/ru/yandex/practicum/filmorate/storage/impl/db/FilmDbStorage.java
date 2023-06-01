@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.common.ErrorMessageUtil;
 import ru.yandex.practicum.filmorate.common.mappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
@@ -285,14 +286,12 @@ public class FilmDbStorage implements FilmStorage {
         return genre;
     }
 
-    // ToDo
-    // или придумать другое исключение или при IllegalArgumentException выдавать bad request
     private void checkRatingExists(final Film film) {
         if (nonNull(film.getRating())) {
             int ratingId = film.getRating().getId();
             boolean ratingNotExists = mpaStorage.getMPARatingById(ratingId).isEmpty();
             if (ratingNotExists) {
-                throw new IllegalArgumentException(String.format("Не существует рейтинга с id = %s", ratingId));
+                throw new ValidationException(String.format("Не существует рейтинга с id = %s", ratingId));
             }
         }
     }
@@ -302,7 +301,7 @@ public class FilmDbStorage implements FilmStorage {
             final List<Integer> genresListIds = film.getGenres().stream().map(Genre::getId).collect(toUnmodifiableList());
             boolean genresNotExists = genreStorage.getGenreById(genresListIds).isEmpty();
             if (genresNotExists) {
-                throw new IllegalArgumentException(String.format("Не существует жанра/жанров с id из списка %s", genresListIds.stream().map(String::valueOf).collect(joining(", "))));
+                throw new ValidationException(String.format("Не существует жанра/жанров с id из списка %s", genresListIds.stream().map(String::valueOf).collect(joining(", "))));
             }
         }
     }
