@@ -1,5 +1,8 @@
 package ru.yandex.practicum.filmorate.storage.impl.inmemory;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
 
@@ -10,6 +13,9 @@ import java.util.Optional;
 
 import static java.util.stream.Collectors.toUnmodifiableList;
 
+@Component
+@Qualifier("inmemoryGenreStorage")
+@RequiredArgsConstructor
 public class InMemoryGenreStorage implements GenreStorage {
     private static final Map<Integer, Genre> GENRES_MAP = new HashMap<>();
 

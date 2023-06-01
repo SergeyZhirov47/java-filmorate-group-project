@@ -1,5 +1,8 @@
 package ru.yandex.practicum.filmorate.storage.impl.inmemory;
 
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.model.MPA;
 import ru.yandex.practicum.filmorate.storage.MPAStorage;
 
@@ -9,6 +12,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Component
+@Qualifier("inmemoryMPAStorage")
+@RequiredArgsConstructor
 public class InMemoryMPAStorage implements MPAStorage {
     private static final Map<Integer, MPA> MPA_RATINGS_MAP = new HashMap<>();
 
