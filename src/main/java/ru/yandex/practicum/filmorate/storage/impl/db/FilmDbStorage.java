@@ -67,7 +67,7 @@ public class FilmDbStorage implements FilmStorage {
 
         // еще нужно достать жанры
         if (nonNull(film)) {
-            final List<Genre> filmGenres = getFilmGenres(id);
+            final Set<Genre> filmGenres = getFilmGenres(id);
             film.setGenres(filmGenres);
         }
 
@@ -84,7 +84,7 @@ public class FilmDbStorage implements FilmStorage {
         final SqlParameterSource parameters = new MapSqlParameterSource("ids", idList);
         final List<Film> films = namedParameterJdbcTemplate.query(sql, parameters, filmRowMapper);
 
-        final Map<Integer, List<Genre>> filmsGenres = getFilmGenres(idList);
+        final Map<Integer, Set<Genre>> filmsGenres = getFilmGenres(idList);
         films.forEach(f -> {
             int filmId = f.getId();
             f.setGenres(filmsGenres.get(filmId));
@@ -97,7 +97,7 @@ public class FilmDbStorage implements FilmStorage {
     public List<Film> getAll() {
         final List<Film> films = jdbcTemplate.query(SELECT_FILM + ";", filmRowMapper);
 
-        final Map<Integer, List<Genre>> filmsGenres = getFilmGenres();
+        final Map<Integer, Set<Genre>> filmsGenres = getFilmGenres();
         films.forEach(f -> {
             int filmId = f.getId();
             f.setGenres(filmsGenres.get(filmId));
@@ -198,10 +198,13 @@ public class FilmDbStorage implements FilmStorage {
         final String insertFilmGenresSql = "INSERT INTO \"film_genre\"\n" +
                 "(\"film_id\", \"genre_id\")\n" +
                 "VALUES(?, ?);";
+
+        final List<Integer> genresIds = film.getGenres().stream().map(Genre::getId).collect(toUnmodifiableList());
+
         jdbcTemplate.batchUpdate(insertFilmGenresSql, new BatchPreparedStatementSetter() {
             public void setValues(PreparedStatement ps, int i) throws SQLException {
                 ps.setInt(1, filmId);
-                ps.setInt(2, film.getGenres().get(i).getId());
+                ps.setInt(2, genresIds.get(i));
             }
 
             public int getBatchSize() {
@@ -216,11 +219,11 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update(deleteFilmGenresSql, filmId);
     }
 
-    private List<Genre> getFilmGenres(int filmId) {
-        final String selectFilmGenres = SELECT_FILM_GENRES + " WHERE f.\"id\" = ?;";
+    private Set<Genre> getFilmGenres(int filmId) {
+        final String selectFilmGenres = SELECT_FILM_GENRES + " WHERE f.\"id\" = ? ORDER BY g.\"id\";";
 
-        final List<Genre> filmGenres = jdbcTemplate.query(selectFilmGenres, rs -> {
-            final List<Genre> resultList = new ArrayList<>();
+        final Set<Genre> filmGenres = jdbcTemplate.query(selectFilmGenres, rs -> {
+            final Set<Genre> resultList = new LinkedHashSet<>();
 
             while (rs.next()) {
                 final Genre genre = getGenreFromResultSet(rs);
@@ -234,26 +237,26 @@ public class FilmDbStorage implements FilmStorage {
         }, filmId);
 
         // если жанров у фильма нет, то должен быть пустой список
-        return Objects.requireNonNullElse(filmGenres, Collections.emptyList());
+        return Objects.requireNonNullElse(filmGenres, Collections.emptySet());
     }
 
-    private Map<Integer, List<Genre>> getFilmGenres() {
-        final String sql = SELECT_FILM_GENRES + ";";
+    private Map<Integer, Set<Genre>> getFilmGenres() {
+        final String sql = SELECT_FILM_GENRES + " ORDER BY g.\"id\";";
         return jdbcTemplate.query(sql, this::extractFilmGenres);
     }
 
-    private Map<Integer, List<Genre>> getFilmGenres(final List<Integer> filmIds) {
+    private Map<Integer, Set<Genre>> getFilmGenres(final List<Integer> filmIds) {
         if (filmIds.isEmpty()) {
             return new HashMap<>();
         }
-        final String sql = SELECT_FILM_GENRES + " WHERE f.\"id\" IN (:ids);";
+        final String sql = SELECT_FILM_GENRES + " WHERE f.\"id\" IN (:ids) ORDER BY g.\"id\";";
         final SqlParameterSource parameters = new MapSqlParameterSource("ids", filmIds);
 
         return namedParameterJdbcTemplate.query(sql, parameters, this::extractFilmGenres);
     }
 
-    private Map<Integer, List<Genre>> extractFilmGenres(final ResultSet rs) throws SQLException {
-        final Map<Integer, List<Genre>> resultMap = new HashMap<>();
+    private Map<Integer, Set<Genre>> extractFilmGenres(final ResultSet rs) throws SQLException {
+        final Map<Integer, Set<Genre>> resultMap = new HashMap<>();
 
         while (rs.next()) {
             int filmId = rs.getInt("id_film");
@@ -261,7 +264,7 @@ public class FilmDbStorage implements FilmStorage {
 
             // если жанров у фильма нет, то должен быть пустой список
             if (!resultMap.containsKey(filmId)) {
-                resultMap.put(filmId, new ArrayList<>());
+                resultMap.put(filmId, new LinkedHashSet<>());
             }
 
             if (nonNull(genre)) {
