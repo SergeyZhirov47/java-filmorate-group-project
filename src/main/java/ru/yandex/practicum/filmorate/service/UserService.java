@@ -71,8 +71,6 @@ public class UserService {
         return getUserListByIds(friendIds);
     }
 
-    // ToDo
-    // это проще реализовать на уровне БД.
     public List<User> getCommonFriends(int userId, int otherUserId) {
         checkUserExists(userId);
         checkOtherUserExists(otherUserId);
@@ -89,11 +87,6 @@ public class UserService {
 
     private List<User> getUserListByIds(final List<Integer> userIds) {
         return userStorage.get(userIds);
-
-       /* return userIds.stream().map(id -> userStorage.get(id))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(Collectors.toUnmodifiableList());*/
     }
 
     private boolean isUserExists(int id) {

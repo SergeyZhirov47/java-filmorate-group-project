@@ -34,11 +34,6 @@ public class FilmService {
     final protected MPAStorage mpaStorage;
 
     public int add(Film film) {
-        // ToDo
-        // в сервисе должна происходить проверка того что рейтинг и жанр существуют?
-        // если взять метод getById, то почему должен возвращаться недоделанный объект. откуда мы это знаем?
-        // с другой стороны вынос этих проверок в storage не будет ли выносом бизнес логики?
-
         final int filmId = filmStorage.add(film);
         likeStorage.registerFilm(filmId);
 
@@ -74,8 +69,6 @@ public class FilmService {
         likeStorage.removeLike(filmId, userId);
     }
 
-    // ToDo
-    // проще и производительнее на уровне БД реализовать (т.е в LikesStorage)
     public List<Film> getPopular(final Optional<Integer> count) {
         int finalCount = count.or(() -> Optional.of(defaultPopularLimit)).get();
 

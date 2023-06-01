@@ -52,7 +52,8 @@ public class FilmDbStorage implements FilmStorage {
     private final FilmRowMapper filmRowMapper = new FilmRowMapper();
 
     // ToDo
-    // А вот поиск популярных фильмов теперь лучшее (по производительности) сделать здесь или в LikeStorage
+    // Жанры не список (List), а Set по идее должен быть. Не должно быть повторов.
+    // Проработать этот момент (валидация?)
 
     @Override
     public Optional<Film> get(int id) {

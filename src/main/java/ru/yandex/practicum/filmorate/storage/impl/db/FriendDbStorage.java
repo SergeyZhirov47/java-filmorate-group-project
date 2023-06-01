@@ -32,18 +32,10 @@ public class FriendDbStorage implements FriendStorage {
 
     @Override
     public List<Integer> getFriends(int userId) {
-        // ToDo
-        // 1. или тут нужно возвращать список пользователей, а не id
-        // 2. или в UserStorage сделать метод, который по списку id сразу список пользователей возвращать, а не как сейчас по одному доставать
-        // final List<User> userFriends = jdbcTemplate.query(sql, userRowMapper);
-
         final List<Integer> userFriends = jdbcTemplate.queryForList(SELECT_FRIENDS + ";", Integer.class, userId);
         return userFriends;
     }
 
-    // ToDo
-    // getCommonFriends
-    // т.е список общих друзей проще получить тут или в UserStorage
     private List<Integer> getCommonFriends(int userId, int otherUserId) {
         final String sql = SELECT_FRIENDS +
                 "UNION " +
