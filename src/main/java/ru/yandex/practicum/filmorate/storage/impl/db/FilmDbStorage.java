@@ -52,10 +52,6 @@ public class FilmDbStorage implements FilmStorage {
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final FilmRowMapper filmRowMapper = new FilmRowMapper();
 
-    // ToDo
-    // Жанры не список (List), а Set по идее должен быть. Не должно быть повторов.
-    // Проработать этот момент (валидация?)
-
     @Override
     public Optional<Film> get(int id) {
         Film film;
