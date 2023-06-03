@@ -8,7 +8,7 @@ DROP TABLE IF EXISTS "users";
 DROP TABLE IF EXISTS "genres";
 DROP TABLE IF EXISTS "MPA_ratings";
 
-// Если нужно, чтобы данные сохранялись, то необходимо закомментировать секцию с DROP TABLE.
+-- Если нужно, чтобы данные сохранялись, то необходимо закомментировать секцию с DROP TABLE.
 
 CREATE TABLE IF NOT EXISTS "genres" (
   "id" INTEGER PRIMARY KEY,
