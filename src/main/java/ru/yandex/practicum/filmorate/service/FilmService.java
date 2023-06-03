@@ -29,9 +29,9 @@ public class FilmService {
     protected final UserStorage userStorage;
 
     @Qualifier("genreDbStorage")
-    final protected GenreStorage genreStorage;
+    protected final GenreStorage genreStorage;
     @Qualifier("mpaDbStorage")
-    final protected MPAStorage mpaStorage;
+    protected final MPAStorage mpaStorage;
 
     public int add(Film film) {
         final int filmId = filmStorage.add(film);
