@@ -96,7 +96,9 @@ public class UserDbStorage implements UserStorage {
 
     @Override
     public void deleteById(int id) {
-        throw new UnsupportedOperationException("not implemented");
+        final String sqlQuery = "DELETE FROM \"users\" " +
+                "WHERE id = ?";
+        jdbcTemplate.update(sqlQuery, id);
     }
 
     @Override
