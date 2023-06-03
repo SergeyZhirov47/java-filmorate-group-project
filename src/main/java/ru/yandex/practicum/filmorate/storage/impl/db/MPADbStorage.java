@@ -16,7 +16,7 @@ import java.util.Optional;
 @Qualifier("mpaDbStorage")
 @RequiredArgsConstructor
 public class MPADbStorage implements MPAStorage {
-    private final static String SELECT_MPA_RATING = "SELECT id, name FROM \"MPA_ratings\"";
+    private static final String SELECT_MPA_RATING = "SELECT id, name FROM \"MPA_ratings\"";
 
     private final JdbcTemplate jdbcTemplate;
     private final MPARatingRowMapper ratingRowMapper = new MPARatingRowMapper();
@@ -28,8 +28,7 @@ public class MPADbStorage implements MPAStorage {
         MPA rating;
         try {
             rating = jdbcTemplate.queryForObject(sql, ratingRowMapper, id);
-        }
-        catch (EmptyResultDataAccessException exp) {
+        } catch (EmptyResultDataAccessException exp) {
             rating = null;
         }
 

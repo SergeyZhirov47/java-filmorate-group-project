@@ -12,7 +12,7 @@ import java.util.List;
 @Qualifier("friendDbStorage")
 @RequiredArgsConstructor
 public class FriendDbStorage implements FriendStorage {
-    private final static String SELECT_FRIENDS = "SELECT id_friend FROM friendship WHERE id_user = ? AND is_accepted = TRUE";
+    private static final String SELECT_FRIENDS = "SELECT id_friend FROM friendship WHERE id_user = ? AND is_accepted = TRUE";
     private final JdbcTemplate jdbcTemplate;
 
     @Override

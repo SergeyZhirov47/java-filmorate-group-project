@@ -20,7 +20,7 @@ import java.util.Optional;
 @Qualifier("genreDbStorage")
 @RequiredArgsConstructor
 public class GenreDbStorage implements GenreStorage {
-    private final static String SELECT_GENRE = "SELECT id, name FROM \"genres\"";
+    private static final String SELECT_GENRE = "SELECT id, name FROM \"genres\"";
 
     private final JdbcTemplate jdbcTemplate;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
