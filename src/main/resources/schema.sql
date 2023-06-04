@@ -1,3 +1,4 @@
+/*
 DROP TABLE IF EXISTS "film_genre";
 DROP TABLE IF EXISTS "likes";
 DROP TABLE IF EXISTS "friendship";
@@ -7,6 +8,7 @@ DROP TABLE IF EXISTS "users";
 
 DROP TABLE IF EXISTS "genres";
 DROP TABLE IF EXISTS "MPA_ratings";
+*/
 
 -- Если нужно, чтобы данные сохранялись, то необходимо закомментировать секцию с DROP TABLE.
 
