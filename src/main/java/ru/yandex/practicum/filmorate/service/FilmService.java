@@ -82,20 +82,6 @@ public class FilmService {
         return getFilmListByIds(popularFilmIds);
     }
 
-    public List<Genre> getAllGenres() {
-        return genreStorage.getAllGenres();
-    }
-
-    public Genre getGenreById(int id) {
-        final Optional<Genre> genreOpt = genreStorage.getGenreById(id);
-
-        if (genreOpt.isEmpty()) {
-            throw new NotFoundException(String.format("Жанр с id = %s не найден", id));
-        }
-
-        return genreOpt.get();
-    }
-
     public List<MPA> getAllMPARatings() {
         return mpaStorage.getAllMPARatings();
     }
