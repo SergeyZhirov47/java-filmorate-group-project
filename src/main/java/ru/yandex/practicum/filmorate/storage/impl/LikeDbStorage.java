@@ -17,12 +17,6 @@ public class LikeDbStorage implements LikeStorage {
     private final JdbcTemplate jdbcTemplate;
 
     @Override
-    public void registerFilm(int filmId) {
-        // Теперь этот метод не нужен. А он в интерфейсе...
-        // throw new UnsupportedOperationException("do nothing in this implementation");
-    }
-
-    @Override
     public void addLike(int filmId, int userId) {
         // ToDo
         // Если лайк уже есть, то ничего не делаем.
