@@ -6,8 +6,6 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.common.ErrorMessageUtil;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
-import ru.yandex.practicum.filmorate.model.MPA;
 import ru.yandex.practicum.filmorate.storage.*;
 
 import java.util.Comparator;
@@ -27,11 +25,6 @@ public class FilmService {
     protected final LikeStorage likeStorage;
     @Qualifier("userDbStorage")
     protected final UserStorage userStorage;
-
-    @Qualifier("genreDbStorage")
-    protected final GenreStorage genreStorage;
-    @Qualifier("mpaDbStorage")
-    protected final MPAStorage mpaStorage;
 
     public int add(Film film) {
         final int filmId = filmStorage.add(film);
@@ -80,20 +73,6 @@ public class FilmService {
                 .collect(Collectors.toUnmodifiableList());
 
         return getFilmListByIds(popularFilmIds);
-    }
-
-    public List<MPA> getAllMPARatings() {
-        return mpaStorage.getAllMPARatings();
-    }
-
-    public MPA getMPARating(int id) {
-        final Optional<MPA> ratingOpt = mpaStorage.getMPARatingById(id);
-
-        if (ratingOpt.isEmpty()) {
-            throw new NotFoundException(String.format("Рейтинг с id = %s не найден", id));
-        }
-
-        return ratingOpt.get();
     }
 
     private boolean isUserExists(int id) {

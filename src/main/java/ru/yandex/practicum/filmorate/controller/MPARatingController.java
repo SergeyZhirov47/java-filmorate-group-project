@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.yandex.practicum.filmorate.model.MPA;
 import ru.yandex.practicum.filmorate.service.FilmService;
+import ru.yandex.practicum.filmorate.service.MPAService;
 
 import java.util.List;
 
@@ -16,17 +17,17 @@ import java.util.List;
 @RequestMapping("/mpa")
 @RequiredArgsConstructor
 public class MPARatingController {
-    private final FilmService filmService;
+    private final MPAService mpaService;
 
     @GetMapping
     public List<MPA> getAll() {
         log.info("GET /mpa");
-        return filmService.getAllMPARatings();
+        return mpaService.getAllMPARatings();
     }
 
     @GetMapping("/{id}")
     public MPA getMPARatingById(@PathVariable(name = "id") int id) {
         log.info(String.format("GET /mpa/{id}, {id} = %s", id));
-        return filmService.getMPARating(id);
+        return mpaService.getMPARating(id);
     }
 }
