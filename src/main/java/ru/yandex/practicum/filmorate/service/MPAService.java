@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.MPA;
@@ -12,6 +13,7 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class MPAService {
+    @Qualifier("mpaDbStorage")
     protected final MPAStorage mpaStorage;
 
     public List<MPA> getAllMPARatings() {
