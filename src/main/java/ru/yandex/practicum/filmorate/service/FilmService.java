@@ -29,8 +29,6 @@ public class FilmService {
 
     public int add(Film film) {
         final int filmId = filmStorage.add(film);
-        likeStorage.registerFilm(filmId);
-
         return filmId;
     }
 
