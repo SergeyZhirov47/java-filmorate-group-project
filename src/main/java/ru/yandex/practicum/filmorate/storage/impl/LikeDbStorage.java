@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storage.impl.db;
+package ru.yandex.practicum.filmorate.storage.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -15,12 +15,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class LikeDbStorage implements LikeStorage {
     private final JdbcTemplate jdbcTemplate;
-
-    @Override
-    public void registerFilm(int filmId) {
-        // Теперь этот метод не нужен. А он в интерфейсе...
-        // throw new UnsupportedOperationException("do nothing in this implementation");
-    }
 
     @Override
     public void addLike(int filmId, int userId) {

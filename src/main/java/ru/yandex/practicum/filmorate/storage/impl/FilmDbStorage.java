@@ -1,4 +1,4 @@
-package ru.yandex.practicum.filmorate.storage.impl.db;
+package ru.yandex.practicum.filmorate.storage.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -43,9 +43,7 @@ public class FilmDbStorage implements FilmStorage {
             "LEFT JOIN \"film_genre\" fg ON fg.\"film_id\" = f.\"id\"\n" +
             "LEFT JOIN \"genres\" g ON g.\"id\" = fg.\"genre_id\"\n";
 
-    @Qualifier("genreDbStorage")
     protected final GenreStorage genreStorage;
-    @Qualifier("mpaDbStorage")
     protected final MPAStorage mpaStorage;
 
     private final JdbcTemplate jdbcTemplate;
