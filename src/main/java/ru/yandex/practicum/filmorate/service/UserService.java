@@ -72,14 +72,7 @@ public class UserService {
         checkUserExists(userId);
         checkOtherUserExists(otherUserId);
 
-        final List<Integer> userFriendIds = friendStorage.getFriends(userId);
-        final List<Integer> otherUserFriendIds = friendStorage.getFriends(otherUserId);
-
-        final List<Integer> commonFriendIds = userFriendIds.stream()
-                .filter(otherUserFriendIds::contains)
-                .collect(Collectors.toUnmodifiableList());
-
-        return getUserListByIds(commonFriendIds);
+        return friendStorage.getCommonFriends(userId, otherUserId);
     }
 
     private List<User> getUserListByIds(final List<Integer> userIds) {
