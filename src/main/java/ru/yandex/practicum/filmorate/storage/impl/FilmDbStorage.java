@@ -34,22 +34,9 @@ import static java.util.stream.Collectors.toUnmodifiableList;
 @Component
 @RequiredArgsConstructor
 public class FilmDbStorage implements FilmStorage {
-    @AllArgsConstructor
-    private enum FilmInsertColumn {
-        NAME(1),
-        DESCRIPTION(2),
-        RELEASE_DATE(3),
-        DURATION(4),
-        MPA_RATING(5);
-
-        @Getter
-        private final int columnIndex;
-    }
-
     private static final String SELECT_FILM = "SELECT f.\"id\", f.\"name\", f.\"description\", f.\"release_date\", f.\"duration\", mr.\"id\" AS id_rating, mr.\"name\" AS name_rating\n" +
             "FROM \"films\" f\n" +
             "LEFT JOIN \"MPA_ratings\" mr ON mr.\"id\" = f.\"mpa_rating_id\"";
-
     private static final String SELECT_FILM_AND_LIKES = "SELECT f.\"id\", f.\"name\", f.\"description\", f.\"release_date\", f.\"duration\", " +
             "mr.\"id\" AS id_rating, mr.\"name\" AS name_rating, COUNT(l.\"id_user\") AS likesCount\n" +
             "FROM \"films\" f\n" +
@@ -57,16 +44,13 @@ public class FilmDbStorage implements FilmStorage {
             "LEFT JOIN \"likes\" l ON l.\"id_film\" = f.\"id\" \n" +
             "GROUP BY f.\"id\" \n" +
             "ORDER BY likesCount DESC";
-
     private static final String SELECT_FILM_BY_ID = SELECT_FILM + " WHERE f.\"id\" = ?";
     private static final String SELECT_FILM_GENRES = "SELECT f.\"id\" as id_film, g.\"id\" as id_genre, g.\"name\" as name_genre\n" +
             "FROM \"films\" f\n" +
             "LEFT JOIN \"film_genre\" fg ON fg.\"film_id\" = f.\"id\"\n" +
             "LEFT JOIN \"genres\" g ON g.\"id\" = fg.\"genre_id\"\n";
-
     protected final GenreStorage genreStorage;
     protected final MPAStorage mpaStorage;
-
     private final JdbcTemplate jdbcTemplate;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final FilmRowMapper filmRowMapper = new FilmRowMapper();
@@ -335,5 +319,17 @@ public class FilmDbStorage implements FilmStorage {
                 throw new ValidationException(String.format("Не существует жанра/жанров с id из списка %s", genresListIds.stream().map(String::valueOf).collect(joining(", "))));
             }
         }
+    }
+
+    @AllArgsConstructor
+    private enum FilmInsertColumn {
+        NAME(1),
+        DESCRIPTION(2),
+        RELEASE_DATE(3),
+        DURATION(4),
+        MPA_RATING(5);
+
+        @Getter
+        private final int columnIndex;
     }
 }

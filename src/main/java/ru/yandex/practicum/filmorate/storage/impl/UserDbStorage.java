@@ -26,16 +26,6 @@ import java.util.Optional;
 @Component
 @RequiredArgsConstructor
 public class UserDbStorage implements UserStorage {
-    @AllArgsConstructor
-    private enum UserInsertColumn {
-        EMAIL(1),
-        LOGIN(2),
-        NAME(3),
-        BIRTHDAY(4);
-
-        @Getter
-        private final int columnIndex;
-    }
     private static final String SELECT_USER = "SELECT \"id\", \"email\", \"login\", \"name\", \"birthday\"\n" +
             "FROM \"users\"";
     private final JdbcTemplate jdbcTemplate;
@@ -130,5 +120,16 @@ public class UserDbStorage implements UserStorage {
         if (!contains(userId)) {
             throw new NotFoundException(ErrorMessageUtil.getNoUserWithIdMessage(userId));
         }
+    }
+
+    @AllArgsConstructor
+    private enum UserInsertColumn {
+        EMAIL(1),
+        LOGIN(2),
+        NAME(3),
+        BIRTHDAY(4);
+
+        @Getter
+        private final int columnIndex;
     }
 }
