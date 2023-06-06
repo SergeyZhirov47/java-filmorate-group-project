@@ -1,5 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BatchPreparedStatementSetter;
@@ -32,6 +34,18 @@ import static java.util.stream.Collectors.toUnmodifiableList;
 @Component
 @RequiredArgsConstructor
 public class FilmDbStorage implements FilmStorage {
+    @AllArgsConstructor
+    private enum FILM_INSERT_COLUMN {
+        NAME(1),
+        DESCRIPTION(2),
+        RELEASE_DATE(3),
+        DURATION(4),
+        MPA_RATING(5);
+
+        @Getter
+        private final int columnIndex;
+    }
+
     private static final String SELECT_FILM = "SELECT f.\"id\", f.\"name\", f.\"description\", f.\"release_date\", f.\"duration\", mr.\"id\" AS id_rating, mr.\"name\" AS name_rating\n" +
             "FROM \"films\" f\n" +
             "LEFT JOIN \"MPA_ratings\" mr ON mr.\"id\" = f.\"mpa_rating_id\"";
@@ -109,15 +123,15 @@ public class FilmDbStorage implements FilmStorage {
 
         jdbcTemplate.update(connection -> {
             final PreparedStatement stmt = connection.prepareStatement(insertFilmSql, new String[]{"id"});
-            stmt.setString(1, film.getName());
-            stmt.setString(2, film.getDescription());
-            stmt.setDate(3, Date.valueOf(film.getReleaseDate()));
-            stmt.setInt(4, film.getDuration());
+            stmt.setString(FILM_INSERT_COLUMN.NAME.getColumnIndex(), film.getName());
+            stmt.setString(FILM_INSERT_COLUMN.DESCRIPTION.getColumnIndex(), film.getDescription());
+            stmt.setDate(FILM_INSERT_COLUMN.RELEASE_DATE.getColumnIndex(), Date.valueOf(film.getReleaseDate()));
+            stmt.setInt(FILM_INSERT_COLUMN.DURATION.getColumnIndex(), film.getDuration());
 
             if (nonNull(film.getRating())) {
-                stmt.setInt(5, film.getRating().getId());
+                stmt.setInt(FILM_INSERT_COLUMN.MPA_RATING.getColumnIndex(), film.getRating().getId());
             } else {
-                stmt.setNull(5, Types.INTEGER);
+                stmt.setNull(FILM_INSERT_COLUMN.MPA_RATING.getColumnIndex(), Types.INTEGER);
             }
 
             return stmt;

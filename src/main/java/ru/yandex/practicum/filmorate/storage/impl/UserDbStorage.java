@@ -1,5 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -24,6 +26,16 @@ import java.util.Optional;
 @Component
 @RequiredArgsConstructor
 public class UserDbStorage implements UserStorage {
+    @AllArgsConstructor
+    private enum USER_INSERT_COLUMN {
+        EMAIL(1),
+        LOGIN(2),
+        NAME(3),
+        BIRTHDAY(4);
+
+        @Getter
+        private final int columnIndex;
+    }
     private static final String SELECT_USER = "SELECT \"id\", \"email\", \"login\", \"name\", \"birthday\"\n" +
             "FROM \"users\"";
     private final JdbcTemplate jdbcTemplate;
@@ -64,10 +76,10 @@ public class UserDbStorage implements UserStorage {
 
         jdbcTemplate.update(connection -> {
             PreparedStatement stmt = connection.prepareStatement(sqlQuery, new String[]{"id"});
-            stmt.setString(1, user.getEmail());
-            stmt.setString(2, user.getLogin());
-            stmt.setString(3, user.getName());
-            stmt.setDate(4, Date.valueOf(user.getBirthday()));
+            stmt.setString(USER_INSERT_COLUMN.EMAIL.getColumnIndex(), user.getEmail());
+            stmt.setString(USER_INSERT_COLUMN.LOGIN.getColumnIndex(), user.getLogin());
+            stmt.setString(USER_INSERT_COLUMN.NAME.getColumnIndex(), user.getName());
+            stmt.setDate(USER_INSERT_COLUMN.BIRTHDAY.getColumnIndex(), Date.valueOf(user.getBirthday()));
             return stmt;
         }, keyHolder);
 
