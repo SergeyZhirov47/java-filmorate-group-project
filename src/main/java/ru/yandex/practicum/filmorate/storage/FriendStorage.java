@@ -9,7 +9,7 @@ public interface FriendStorage {
 
     void deleteFriend(int userId, int friendId);
 
-    List<Integer> getFriends(int userId);
+    List<User> getFriends(int userId);
 
     List<User> getCommonFriends(int userId, int otherUserId);
 }

@@ -64,8 +64,7 @@ public class UserService {
     public List<User> getFriends(int userId) {
         checkUserExists(userId);
 
-        final List<Integer> friendIds = friendStorage.getFriends(userId);
-        return getUserListByIds(friendIds);
+        return friendStorage.getFriends(userId);
     }
 
     public List<User> getCommonFriends(int userId, int otherUserId) {
@@ -73,10 +72,6 @@ public class UserService {
         checkOtherUserExists(otherUserId);
 
         return friendStorage.getCommonFriends(userId, otherUserId);
-    }
-
-    private List<User> getUserListByIds(final List<Integer> userIds) {
-        return userStorage.get(userIds);
     }
 
     private boolean isUserExists(int id) {

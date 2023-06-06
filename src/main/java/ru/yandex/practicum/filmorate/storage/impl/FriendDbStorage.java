@@ -40,8 +40,8 @@ public class FriendDbStorage implements FriendStorage {
     }
 
     @Override
-    public List<Integer> getFriends(int userId) {
-        final List<Integer> userFriends = jdbcTemplate.queryForList(SELECT_ID_FRIENDS + ";", Integer.class, userId);
+    public List<User> getFriends(int userId) {
+        final List<User> userFriends = jdbcTemplate.query(SELECT_FRIENDS + " WHERE u.id IN (" + SELECT_ID_FRIENDS + ")", userRowMapper, userId);
         return userFriends;
     }
 
