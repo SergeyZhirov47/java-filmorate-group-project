@@ -78,11 +78,13 @@ public class FilmDbStorage implements FilmStorage {
         final SqlParameterSource parameters = new MapSqlParameterSource("ids", idList);
         final List<Film> films = namedParameterJdbcTemplate.query(sql, parameters, filmRowMapper);
 
-        final Map<Integer, Set<Genre>> filmsGenres = getFilmGenres(idList);
-        films.forEach(f -> {
-            int filmId = f.getId();
-            f.setGenres(filmsGenres.get(filmId));
-        });
+        if (!films.isEmpty()) {
+            final Map<Integer, Set<Genre>> filmsGenres = getFilmGenres(idList);
+            films.forEach(f -> {
+                int filmId = f.getId();
+                f.setGenres(filmsGenres.get(filmId));
+            });
+        }
 
         return films;
     }
