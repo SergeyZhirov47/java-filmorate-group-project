@@ -18,8 +18,6 @@ public class LikeDbStorage implements LikeStorage {
 
     @Override
     public void addLike(int filmId, int userId) {
-        // ToDo
-        // Если лайк уже есть, то ничего не делаем.
         final String sql = "INSERT INTO \"likes\"\n" +
                 "(\"id_film\", \"id_user\")\n" +
                 "VALUES(? , ?);";
