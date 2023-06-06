@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.stereotype.Component;
@@ -11,7 +10,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Component
-@Qualifier("likeDbStorage")
 @RequiredArgsConstructor
 public class LikeDbStorage implements LikeStorage {
     private final JdbcTemplate jdbcTemplate;

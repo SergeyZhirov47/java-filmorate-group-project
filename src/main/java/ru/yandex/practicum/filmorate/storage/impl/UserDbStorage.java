@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -23,7 +22,6 @@ import java.util.List;
 import java.util.Optional;
 
 @Component
-@Qualifier("userDbStorage")
 @RequiredArgsConstructor
 public class UserDbStorage implements UserStorage {
     private static final String SELECT_USER = "SELECT \"id\", \"email\", \"login\", \"name\", \"birthday\"\n" +

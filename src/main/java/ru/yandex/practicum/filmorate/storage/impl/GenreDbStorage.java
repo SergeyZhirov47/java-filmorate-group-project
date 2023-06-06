@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -17,7 +16,6 @@ import java.util.List;
 import java.util.Optional;
 
 @Component
-@Qualifier("genreDbStorage")
 @RequiredArgsConstructor
 public class GenreDbStorage implements GenreStorage {
     private static final String SELECT_GENRE = "SELECT id, name FROM \"genres\"";

@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.common.mappers.UserRowMapper;
@@ -11,7 +10,6 @@ import ru.yandex.practicum.filmorate.storage.FriendStorage;
 import java.util.List;
 
 @Component
-@Qualifier("friendDbStorage")
 @RequiredArgsConstructor
 public class FriendDbStorage implements FriendStorage {
     private static final String SELECT_ID_FRIENDS = "SELECT f.id_friend " +
