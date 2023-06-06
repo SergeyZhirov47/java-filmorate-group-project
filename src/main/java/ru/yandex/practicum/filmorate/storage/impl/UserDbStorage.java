@@ -27,7 +27,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserDbStorage implements UserStorage {
     @AllArgsConstructor
-    private enum USER_INSERT_COLUMN {
+    private enum UserInsertColumn {
         EMAIL(1),
         LOGIN(2),
         NAME(3),
@@ -76,10 +76,10 @@ public class UserDbStorage implements UserStorage {
 
         jdbcTemplate.update(connection -> {
             PreparedStatement stmt = connection.prepareStatement(sqlQuery, new String[]{"id"});
-            stmt.setString(USER_INSERT_COLUMN.EMAIL.getColumnIndex(), user.getEmail());
-            stmt.setString(USER_INSERT_COLUMN.LOGIN.getColumnIndex(), user.getLogin());
-            stmt.setString(USER_INSERT_COLUMN.NAME.getColumnIndex(), user.getName());
-            stmt.setDate(USER_INSERT_COLUMN.BIRTHDAY.getColumnIndex(), Date.valueOf(user.getBirthday()));
+            stmt.setString(UserInsertColumn.EMAIL.getColumnIndex(), user.getEmail());
+            stmt.setString(UserInsertColumn.LOGIN.getColumnIndex(), user.getLogin());
+            stmt.setString(UserInsertColumn.NAME.getColumnIndex(), user.getName());
+            stmt.setDate(UserInsertColumn.BIRTHDAY.getColumnIndex(), Date.valueOf(user.getBirthday()));
             return stmt;
         }, keyHolder);
 

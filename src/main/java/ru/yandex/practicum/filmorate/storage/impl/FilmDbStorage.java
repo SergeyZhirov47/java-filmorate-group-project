@@ -35,7 +35,7 @@ import static java.util.stream.Collectors.toUnmodifiableList;
 @RequiredArgsConstructor
 public class FilmDbStorage implements FilmStorage {
     @AllArgsConstructor
-    private enum FILM_INSERT_COLUMN {
+    private enum FilmInsertColumn {
         NAME(1),
         DESCRIPTION(2),
         RELEASE_DATE(3),
@@ -123,15 +123,15 @@ public class FilmDbStorage implements FilmStorage {
 
         jdbcTemplate.update(connection -> {
             final PreparedStatement stmt = connection.prepareStatement(insertFilmSql, new String[]{"id"});
-            stmt.setString(FILM_INSERT_COLUMN.NAME.getColumnIndex(), film.getName());
-            stmt.setString(FILM_INSERT_COLUMN.DESCRIPTION.getColumnIndex(), film.getDescription());
-            stmt.setDate(FILM_INSERT_COLUMN.RELEASE_DATE.getColumnIndex(), Date.valueOf(film.getReleaseDate()));
-            stmt.setInt(FILM_INSERT_COLUMN.DURATION.getColumnIndex(), film.getDuration());
+            stmt.setString(FilmInsertColumn.NAME.getColumnIndex(), film.getName());
+            stmt.setString(FilmInsertColumn.DESCRIPTION.getColumnIndex(), film.getDescription());
+            stmt.setDate(FilmInsertColumn.RELEASE_DATE.getColumnIndex(), Date.valueOf(film.getReleaseDate()));
+            stmt.setInt(FilmInsertColumn.DURATION.getColumnIndex(), film.getDuration());
 
             if (nonNull(film.getRating())) {
-                stmt.setInt(FILM_INSERT_COLUMN.MPA_RATING.getColumnIndex(), film.getRating().getId());
+                stmt.setInt(FilmInsertColumn.MPA_RATING.getColumnIndex(), film.getRating().getId());
             } else {
-                stmt.setNull(FILM_INSERT_COLUMN.MPA_RATING.getColumnIndex(), Types.INTEGER);
+                stmt.setNull(FilmInsertColumn.MPA_RATING.getColumnIndex(), Types.INTEGER);
             }
 
             return stmt;
