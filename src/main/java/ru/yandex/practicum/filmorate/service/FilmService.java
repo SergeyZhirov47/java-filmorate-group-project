@@ -5,13 +5,12 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.common.ErrorMessageUtil;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.storage.*;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.LikeStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -57,16 +56,8 @@ public class FilmService {
     }
 
     public List<Film> getPopular(final Optional<Integer> count) {
-        int finalCount = count.or(() -> Optional.of(defaultPopularLimit)).get();
-
-        final Map<Integer, Integer> filmsLikes = likeStorage.getFilmLikes();
-        final Comparator<Map.Entry<Integer, Integer>> likesCountDescComparator = Comparator.<Map.Entry<Integer, Integer>>comparingInt(Map.Entry::getValue).reversed();
-
-        final List<Integer> popularFilmIds = filmsLikes.entrySet().stream()
-                .sorted(likesCountDescComparator).map(Map.Entry::getKey).limit(finalCount)
-                .collect(Collectors.toUnmodifiableList());
-
-        return getFilmListByIds(popularFilmIds);
+        Optional<Integer> countOrDefault = count.or(() -> Optional.of(defaultPopularLimit));
+        return filmStorage.getPopular(countOrDefault);
     }
 
     private boolean isUserExists(int id) {
@@ -89,9 +80,5 @@ public class FilmService {
 
     private void checkUserExists(int id) {
         checkExistsWithException(isUserExists(id), ErrorMessageUtil.getNoUserWithIdMessage(id));
-    }
-
-    private List<Film> getFilmListByIds(final List<Integer> filmIds) {
-        return filmStorage.get(filmIds);
     }
 }

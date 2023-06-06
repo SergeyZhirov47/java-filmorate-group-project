@@ -37,6 +37,15 @@ public class FilmDbStorage implements FilmStorage {
     private static final String SELECT_FILM = "SELECT f.\"id\", f.\"name\", f.\"description\", f.\"release_date\", f.\"duration\", mr.\"id\" AS id_rating, mr.\"name\" AS name_rating\n" +
             "FROM \"films\" f\n" +
             "LEFT JOIN \"MPA_ratings\" mr ON mr.\"id\" = f.\"mpa_rating_id\"";
+
+    private static final String SELECT_FILM_AND_LIKES = "SELECT f.\"id\", f.\"name\", f.\"description\", f.\"release_date\", f.\"duration\", " +
+            "mr.\"id\" AS id_rating, mr.\"name\" AS name_rating, COUNT(l.\"id_user\") AS likesCount\n" +
+            "FROM \"films\" f\n" +
+            "LEFT JOIN \"MPA_ratings\" mr ON mr.\"id\" = f.\"mpa_rating_id\" \n" +
+            "LEFT JOIN \"likes\" l ON l.\"id_film\" = f.\"id\" \n" +
+            "GROUP BY f.\"id\" \n" +
+            "ORDER BY likesCount DESC";
+
     private static final String SELECT_FILM_BY_ID = SELECT_FILM + " WHERE f.\"id\" = ?";
     private static final String SELECT_FILM_GENRES = "SELECT f.\"id\" as id_film, g.\"id\" as id_genre, g.\"name\" as name_genre\n" +
             "FROM \"films\" f\n" +
@@ -77,14 +86,7 @@ public class FilmDbStorage implements FilmStorage {
         final String sql = SELECT_FILM + " WHERE f.\"id\" IN (:ids);";
         final SqlParameterSource parameters = new MapSqlParameterSource("ids", idList);
         final List<Film> films = namedParameterJdbcTemplate.query(sql, parameters, filmRowMapper);
-
-        if (!films.isEmpty()) {
-            final Map<Integer, Set<Genre>> filmsGenres = getFilmGenres(idList);
-            films.forEach(f -> {
-                int filmId = f.getId();
-                f.setGenres(filmsGenres.get(filmId));
-            });
-        }
+        setFilmGenres(films, getFilmGenres(idList));
 
         return films;
     }
@@ -92,12 +94,7 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public List<Film> getAll() {
         final List<Film> films = jdbcTemplate.query(SELECT_FILM + ";", filmRowMapper);
-
-        final Map<Integer, Set<Genre>> filmsGenres = getFilmGenres();
-        films.forEach(f -> {
-            int filmId = f.getId();
-            f.setGenres(filmsGenres.get(filmId));
-        });
+        setFilmGenres(films, getFilmGenres());
 
         return films;
     }
@@ -179,6 +176,21 @@ public class FilmDbStorage implements FilmStorage {
         return isExists;
     }
 
+    @Override
+    public List<Film> getPopular(Optional<Integer> count) {
+        String selectPopular = SELECT_FILM_AND_LIKES;
+
+        if (count.isPresent()) {
+            selectPopular += " LIMIT " + count.get();
+        }
+
+        final List<Film> films = jdbcTemplate.query(selectPopular + ";", filmRowMapper);
+        final List<Integer> idList = films.stream().map(Film::getId).collect(toUnmodifiableList());
+        setFilmGenres(films, getFilmGenres(idList));
+
+        return films;
+    }
+
     private void checkFilmExists(int filmId) {
         if (!contains(filmId)) {
             throw new NotFoundException(ErrorMessageUtil.getNoFilmWithIdMessage(filmId));
@@ -215,6 +227,19 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update(deleteFilmGenresSql, filmId);
     }
 
+    private void setFilmGenres(final List<Film> films, final Map<Integer, Set<Genre>> filmsGenres) {
+        if (!films.isEmpty()) {
+            films.forEach(f -> {
+                f.setGenres(filmsGenres.get(f.getId()));
+            });
+        }
+    }
+
+    private Map<Integer, Set<Genre>> getFilmGenres() {
+        final String sql = SELECT_FILM_GENRES + " ORDER BY g.\"id\";";
+        return jdbcTemplate.query(sql, this::extractFilmGenres);
+    }
+
     private Set<Genre> getFilmGenres(int filmId) {
         final String selectFilmGenres = SELECT_FILM_GENRES + " WHERE f.\"id\" = ? ORDER BY g.\"id\";";
 
@@ -234,11 +259,6 @@ public class FilmDbStorage implements FilmStorage {
 
         // если жанров у фильма нет, то должен быть пустой список
         return Objects.requireNonNullElse(filmGenres, Collections.emptySet());
-    }
-
-    private Map<Integer, Set<Genre>> getFilmGenres() {
-        final String sql = SELECT_FILM_GENRES + " ORDER BY g.\"id\";";
-        return jdbcTemplate.query(sql, this::extractFilmGenres);
     }
 
     private Map<Integer, Set<Genre>> getFilmGenres(final List<Integer> filmIds) {

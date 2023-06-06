@@ -21,4 +21,6 @@ public interface FilmStorage {
     List<Film> getAll();
 
     boolean contains(int id);
+
+    List<Film> getPopular(Optional<Integer> count);
 }
