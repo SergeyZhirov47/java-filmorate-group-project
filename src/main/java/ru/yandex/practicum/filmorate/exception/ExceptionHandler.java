@@ -31,6 +31,14 @@ public class ExceptionHandler {
         return new ErrorResponseData(exp.getMessage());
     }
 
+    @org.springframework.web.bind.annotation.ExceptionHandler(ValidationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponseData handle(ValidationException exp) {
+        log.warn(exp.getMessage(), exp);
+
+        return new ErrorResponseData(exp.getMessage());
+    }
+
     @org.springframework.web.bind.annotation.ExceptionHandler(Throwable.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponseData handle(Throwable exp) {

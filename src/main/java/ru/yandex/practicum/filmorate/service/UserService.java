@@ -1,6 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.common.ErrorMessageUtil;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -10,18 +10,12 @@ import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class UserService {
-    protected UserStorage userStorage;
-    protected FriendStorage friendStorage;
-
-    @Autowired
-    public UserService(final UserStorage userStorage, final FriendStorage friendStorage) {
-        this.userStorage = userStorage;
-        this.friendStorage = friendStorage;
-    }
+    protected final UserStorage userStorage;
+    protected final FriendStorage friendStorage;
 
     public int add(User user) {
         user.setEmptyNameAsLogin();
@@ -69,29 +63,14 @@ public class UserService {
     public List<User> getFriends(int userId) {
         checkUserExists(userId);
 
-        final List<Integer> friendIds = friendStorage.getFriends(userId);
-        return getUserListByIds(friendIds);
+        return friendStorage.getFriends(userId);
     }
 
     public List<User> getCommonFriends(int userId, int otherUserId) {
         checkUserExists(userId);
         checkOtherUserExists(otherUserId);
 
-        final List<Integer> userFriendIds = friendStorage.getFriends(userId);
-        final List<Integer> otherUserFriendIds = friendStorage.getFriends(otherUserId);
-
-        final List<Integer> commonFriendIds = userFriendIds.stream()
-                .filter(otherUserFriendIds::contains)
-                .collect(Collectors.toUnmodifiableList());
-
-        return getUserListByIds(commonFriendIds);
-    }
-
-    private List<User> getUserListByIds(final List<Integer> userIds) {
-        return userIds.stream().map(id -> userStorage.get(id))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .collect(Collectors.toUnmodifiableList());
+        return friendStorage.getCommonFriends(userId, otherUserId);
     }
 
     private boolean isUserExists(int id) {

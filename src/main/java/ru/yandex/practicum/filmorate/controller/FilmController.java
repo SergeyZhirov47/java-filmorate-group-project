@@ -29,7 +29,6 @@ public class FilmController {
     }
 
     @PutMapping
-    @ResponseStatus(HttpStatus.OK)
     public Film update(@Valid @RequestBody Film film) {
         log.info("PUT /films");
         filmService.update(film);
@@ -39,36 +38,30 @@ public class FilmController {
     }
 
     @GetMapping
-    @ResponseStatus(HttpStatus.OK)
     public List<Film> getAll() {
         log.info("GET /films");
         return filmService.getAll();
     }
 
     @GetMapping("/{id}")
-    @ResponseStatus(HttpStatus.OK)
     public Film getFilmById(@PathVariable(name = "id") int id) {
         log.info(String.format("GET /films/{id}, {id} = %s", id));
         return filmService.getById(id);
     }
 
-
     @PutMapping("/{id}/like/{userId}")
-    @ResponseStatus(HttpStatus.OK)
     public void addLike(@PathVariable(name = "id") int id, @PathVariable(name = "userId") int userId) {
         log.info(String.format("PUT /films/{id}/like/{userId}, {id} = %s, {userId} = %s", id, userId));
         filmService.addLike(id, userId);
     }
 
     @DeleteMapping("/{id}/like/{userId}")
-    @ResponseStatus(HttpStatus.OK)
     public void deleteLike(@PathVariable(name = "id") int id, @PathVariable(name = "userId") int userId) {
         log.info(String.format("DELETE /films/{id}/like/{userId}, {id} = %s, {userId} = %s", id, userId));
         filmService.deleteLike(id, userId);
     }
 
     @GetMapping("/popular")
-    @ResponseStatus(HttpStatus.OK)
     public List<Film> getPopular(@RequestParam(name = "count") Optional<Integer> count) {
         log.info(String.format("GET /films/popular?count={count}, {count} = %s", count.isPresent() ? count.get() : "не указан"));
         return filmService.getPopular(count);

@@ -8,6 +8,10 @@ import java.util.Optional;
 public interface UserStorage {
     Optional<User> get(int id);
 
+    List<User> get(List<Integer> idList);
+
+    List<User> getAll();
+
     int add(User user);
 
     void update(User user);
@@ -15,8 +19,6 @@ public interface UserStorage {
     void delete(User user);
 
     void deleteById(int id);
-
-    List<User> getAll();
 
     boolean contains(int id);
 }

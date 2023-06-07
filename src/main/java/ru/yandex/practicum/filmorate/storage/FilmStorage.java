@@ -8,6 +8,8 @@ import java.util.Optional;
 public interface FilmStorage {
     Optional<Film> get(int id);
 
+    List<Film> get(List<Integer> idList);
+
     int add(Film film);
 
     void update(Film film);
@@ -19,4 +21,6 @@ public interface FilmStorage {
     List<Film> getAll();
 
     boolean contains(int id);
+
+    List<Film> getPopular(Optional<Integer> count);
 }
