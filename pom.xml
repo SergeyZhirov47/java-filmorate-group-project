@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>ru.yandex.practicum</groupId>
-	<artifactId>filmorate</artifactId>
+	<artifactId>filmorate-group-project</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>filmorate</name>
 	<description>Кинопоиск на минималках</description>
