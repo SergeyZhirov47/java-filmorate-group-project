@@ -62,7 +62,7 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public List<Film> getPopular( @RequestParam(name = "count") Optional<Integer> count,
+    public List<Film> getPopular(@RequestParam(name = "count") Optional<Integer> count,
                                   @RequestParam(value = "genreId", required = false) Optional<Integer> genreId,
                                   @RequestParam(value = "year", required = false) Optional<Integer> year) {
         log.info(String.format("GET /films/popular?count={count}&genreId={genreId}&year={year}, {count} = %s, " +
