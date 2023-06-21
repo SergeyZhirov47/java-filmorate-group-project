@@ -59,7 +59,6 @@ public class FilmDbStorage implements FilmStorage {
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final FilmRowMapper filmRowMapper = new FilmRowMapper();
 
-
     @Override
     public Optional<Film> get(int id) {
         Film film;
@@ -241,7 +240,7 @@ public class FilmDbStorage implements FilmStorage {
         return jdbcTemplate.query(sql, this::extractFilmGenres);
     }
 
-    public Set<Genre> getFilmGenres(int filmId) {
+    private Set<Genre> getFilmGenres(int filmId) {
         final String selectFilmGenres = SELECT_FILM_GENRES + " WHERE f.\"id\" = ? ORDER BY g.\"id\";";
 
         final Set<Genre> filmGenres = jdbcTemplate.query(selectFilmGenres, rs -> {

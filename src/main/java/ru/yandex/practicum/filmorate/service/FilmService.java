@@ -1,14 +1,12 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.common.ErrorMessageUtil;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.LikeStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -17,7 +15,6 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
 public class FilmService {
 
@@ -76,7 +73,6 @@ public class FilmService {
                     .collect(Collectors.toList());
         }
         return filmList;
-
     }
 
     private boolean isUserExists(int id) {
@@ -100,5 +96,4 @@ public class FilmService {
     private void checkUserExists(int id) {
         checkExistsWithException(isUserExists(id), ErrorMessageUtil.getNoUserWithIdMessage(id));
     }
-
 }
