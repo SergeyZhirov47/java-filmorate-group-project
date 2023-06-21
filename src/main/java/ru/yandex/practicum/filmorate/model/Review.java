@@ -6,16 +6,20 @@ import lombok.Data;
 import lombok.extern.jackson.Jacksonized;
 
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 @Data
 @Builder
 @Jacksonized
 public class Review {
     private int id;
+    @NotNull
     private int filmId; // id фильма, к которому относится этот отзыв.
+    @NotNull
     private int userId; // id пользователя, который оставил этот отзыв.
     @NotBlank(message = "Текст отзыва не может быть пустым")
     private String content; // текст отзыва.
+    @NotNull
     private boolean isPositive; // тип отзыва (положительный/отрицательный).
 
     // ToDo
