@@ -1,21 +1,25 @@
 package ru.yandex.practicum.filmorate.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.common.ErrorMessageUtil;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
+import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.LikeStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
+@Slf4j
 @RequiredArgsConstructor
 public class FilmService {
-    protected final int defaultPopularLimit = 10;
 
     protected final FilmStorage filmStorage;
     protected final LikeStorage likeStorage;
@@ -55,9 +59,24 @@ public class FilmService {
         likeStorage.removeLike(filmId, userId);
     }
 
-    public List<Film> getPopular(final Optional<Integer> count) {
-        Optional<Integer> countOrDefault = count.or(() -> Optional.of(defaultPopularLimit));
-        return filmStorage.getPopular(countOrDefault);
+    public List<Film> getPopularByGenresAndYear(Optional<Integer> count, Optional<Integer> genreId, Optional<Integer> year) {
+        List<Film> filmList = filmStorage.getPopular(count);
+        if (genreId.isPresent()) {
+            filmList = filmList.stream()
+                    .filter(film -> film.getGenres() != null)
+                    .filter(film -> film.getGenres().stream()
+                            .map(Genre::getId)
+                            .collect(Collectors.toList())
+                            .contains(genreId.get()))
+                    .collect(Collectors.toList());
+        }
+        if (year.isPresent()) {
+            filmList = filmList.stream()
+                    .filter(film -> film.getReleaseDate().getYear() == year.get())
+                    .collect(Collectors.toList());
+        }
+        return filmList;
+
     }
 
     private boolean isUserExists(int id) {
@@ -81,4 +100,5 @@ public class FilmService {
     private void checkUserExists(int id) {
         checkExistsWithException(isUserExists(id), ErrorMessageUtil.getNoUserWithIdMessage(id));
     }
+
 }

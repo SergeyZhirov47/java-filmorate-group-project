@@ -34,10 +34,13 @@ import static java.util.stream.Collectors.toUnmodifiableList;
 @Component
 @RequiredArgsConstructor
 public class FilmDbStorage implements FilmStorage {
-    private static final String SELECT_FILM = "SELECT f.\"id\", f.\"name\", f.\"description\", f.\"release_date\", f.\"duration\", mr.\"id\" AS id_rating, mr.\"name\" AS name_rating\n" +
+
+    private static final String SELECT_FILM = "SELECT f.\"id\", f.\"name\", f.\"description\", f.\"release_date\", " +
+            "f.\"duration\", mr.\"id\" AS id_rating, mr.\"name\" AS name_rating\n" +
             "FROM \"films\" f\n" +
             "LEFT JOIN \"MPA_ratings\" mr ON mr.\"id\" = f.\"mpa_rating_id\"";
-    private static final String SELECT_FILM_AND_LIKES = "SELECT f.\"id\", f.\"name\", f.\"description\", f.\"release_date\", f.\"duration\", " +
+    private static final String SELECT_FILM_AND_LIKES = "SELECT f.\"id\", f.\"name\", f.\"description\", " +
+            "f.\"release_date\", f.\"duration\", " +
             "mr.\"id\" AS id_rating, mr.\"name\" AS name_rating, COUNT(l.\"id_user\") AS likesCount\n" +
             "FROM \"films\" f\n" +
             "LEFT JOIN \"MPA_ratings\" mr ON mr.\"id\" = f.\"mpa_rating_id\" \n" +
@@ -45,7 +48,8 @@ public class FilmDbStorage implements FilmStorage {
             "GROUP BY f.\"id\" \n" +
             "ORDER BY likesCount DESC";
     private static final String SELECT_FILM_BY_ID = SELECT_FILM + " WHERE f.\"id\" = ?";
-    private static final String SELECT_FILM_GENRES = "SELECT f.\"id\" as id_film, g.\"id\" as id_genre, g.\"name\" as name_genre\n" +
+    private static final String SELECT_FILM_GENRES = "SELECT f.\"id\" as id_film, g.\"id\" as id_genre, " +
+            "g.\"name\" as name_genre\n" +
             "FROM \"films\" f\n" +
             "LEFT JOIN \"film_genre\" fg ON fg.\"film_id\" = f.\"id\"\n" +
             "LEFT JOIN \"genres\" g ON g.\"id\" = fg.\"genre_id\"\n";
@@ -54,6 +58,7 @@ public class FilmDbStorage implements FilmStorage {
     private final JdbcTemplate jdbcTemplate;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final FilmRowMapper filmRowMapper = new FilmRowMapper();
+
 
     @Override
     public Optional<Film> get(int id) {
@@ -236,7 +241,7 @@ public class FilmDbStorage implements FilmStorage {
         return jdbcTemplate.query(sql, this::extractFilmGenres);
     }
 
-    private Set<Genre> getFilmGenres(int filmId) {
+    public Set<Genre> getFilmGenres(int filmId) {
         final String selectFilmGenres = SELECT_FILM_GENRES + " WHERE f.\"id\" = ? ORDER BY g.\"id\";";
 
         final Set<Genre> filmGenres = jdbcTemplate.query(selectFilmGenres, rs -> {
