@@ -12,21 +12,17 @@ import javax.validation.constraints.NotNull;
 @Builder
 @Jacksonized
 public class Review {
+    @JsonProperty("reviewId")
     private int id;
     @NotNull
-    private int filmId; // id фильма, к которому относится этот отзыв.
+    private Integer filmId; // id фильма, к которому относится этот отзыв.
     @NotNull
-    private int userId; // id пользователя, который оставил этот отзыв.
+    private Integer userId; // id пользователя, который оставил этот отзыв.
     @NotBlank(message = "Текст отзыва не может быть пустым")
     private String content; // текст отзыва.
+    @JsonProperty("isPositive")
     @NotNull
-    private boolean isPositive; // тип отзыва (положительный/отрицательный).
-
-    // ToDo
-    // Т.е отдельно еще будет храниться оценки (можно назвать их лайками) отзывов.
-    // Тогда тут будет:
-    // 1. Список с этими оценками и будет отдельный метод, который будет рассчитывать числовое значение рейтинга.
-    // 2. Или просто числовое значение, а расчет на стороне SQL.
+    private Boolean isPositive; // тип отзыва (положительный/отрицательный).
 
     /*
     Рейтинг отзыва.
