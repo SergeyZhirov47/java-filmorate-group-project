@@ -88,14 +88,10 @@ ALTER TABLE "friendship" ADD FOREIGN KEY ("id_user") REFERENCES "users" ("id");
 ALTER TABLE "friendship" ADD FOREIGN KEY ("id_friend") REFERENCES "users" ("id");
 ALTER TABLE "friendship" ADD UNIQUE ("id_user", "id_friend");
 
-/*
-ToDo
-При удаление отзыва удалить все лайки и дизлайки из reviews_likes.
-*/
 ALTER TABLE "reviews" ADD FOREIGN KEY ("id_film") REFERENCES "films" ("id");
 ALTER TABLE "reviews" ADD FOREIGN KEY ("id_user") REFERENCES "users" ("id");
 ALTER TABLE "reviews" ADD UNIQUE ("id_user", "id_film");
 
-ALTER TABLE "reviews_likes" ADD FOREIGN KEY ("id_review") REFERENCES "reviews" ("id");
+ALTER TABLE "reviews_likes" ADD FOREIGN KEY ("id_review") REFERENCES "reviews" ("id") ON DELETE CASCADE;
 ALTER TABLE "reviews_likes" ADD FOREIGN KEY ("id_user") REFERENCES "users" ("id");
 ALTER TABLE "reviews_likes" ADD UNIQUE ("id_user", "id_review");
