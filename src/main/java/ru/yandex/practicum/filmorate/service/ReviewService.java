@@ -5,8 +5,10 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.common.ErrorMessageUtil;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.ReviewLikeStorage;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
+import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,16 +21,18 @@ public class ReviewService {
     protected final ReviewStorage reviewStorage;
     protected final ReviewLikeStorage reviewLikeStorage;
 
-    // ToDo
-    // проверки на наличие фильма, пользователя и обзора перенести сюда из ReviewDbStorage
+    private final UserStorage userStorage;
+    private final FilmStorage filmStorage;
 
     public int add(final Review review) {
+        checkUserExists(review.getUserId());
+        checkFilmExists(review.getFilmId());
+
         return reviewStorage.add(review);
     }
 
     public void update(final Review review) {
-        // ToDo
-        // наверное должны проверять, что filmId и userId не поменялись у отзыва (в тестах постмана этот момент не учитывается).
+        checkReviewExists(review.getId());
         reviewStorage.update(review);
     }
 
@@ -38,6 +42,7 @@ public class ReviewService {
     }
 
     public void deleteById(int id) {
+        checkReviewExists(id);
         reviewStorage.deleteById(id);
     }
 
@@ -65,5 +70,23 @@ public class ReviewService {
 
     public void deleteDislike(int reviewId, int userId) {
         reviewLikeStorage.deleteDislike(reviewId, userId);
+    }
+
+    private void checkReviewExists(int reviewId) {
+        if (!reviewStorage.contains(reviewId)) {
+            throw new NotFoundException(ErrorMessageUtil.getNoEntityWithIdMessage("Нет отзыва", reviewId));
+        }
+    }
+
+    private void checkFilmExists(int filmId) {
+        if (!filmStorage.contains(filmId)) {
+            throw new NotFoundException(ErrorMessageUtil.getNoFilmWithIdMessage(filmId));
+        }
+    }
+
+    private void checkUserExists(int userId) {
+        if (!userStorage.contains(userId)) {
+            throw new NotFoundException(ErrorMessageUtil.getNoUserWithIdMessage(userId));
+        }
     }
 }

@@ -10,13 +10,9 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
-import ru.yandex.practicum.filmorate.common.ErrorMessageUtil;
 import ru.yandex.practicum.filmorate.common.mappers.ReviewRowMapper;
-import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.sql.PreparedStatement;
 import java.util.List;
@@ -41,10 +37,6 @@ public class ReviewDbStorage implements ReviewStorage {
 
     private final JdbcTemplate jdbcTemplate;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-
-    private final UserStorage userStorage;
-    private final FilmStorage filmStorage;
-
     private final ReviewRowMapper reviewRowMapper = new ReviewRowMapper();
 
     @Override
@@ -81,9 +73,6 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public int add(final Review review) {
-        checkUserExists(review.getUserId());
-        checkFilmExists(review.getFilmId());
-
         final String insertSql = "INSERT into \"reviews\" (id_user, id_film, content, isPositive) " +
                 "VALUES (?, ?, ?, ?)";
 
@@ -107,21 +96,15 @@ public class ReviewDbStorage implements ReviewStorage {
 
     @Override
     public void update(final Review review) {
-        final int reviewId = review.getId();
-
-        checkReviewExists(reviewId);
-
         final String updateSql = "UPDATE \"reviews\"\n" +
                 "SET content = ?, isPositive = ?\n" +
                 "WHERE id = ?;";
 
-        jdbcTemplate.update(updateSql, review.getContent(), review.getIsPositive(), reviewId);
+        jdbcTemplate.update(updateSql, review.getContent(), review.getIsPositive(), review.getId());
     }
 
     @Override
     public void deleteById(int id) {
-        checkReviewExists(id);
-
         final String sqlQuery = "DELETE FROM \"reviews\" " +
                 "WHERE id = ?";
         jdbcTemplate.update(sqlQuery, id);
@@ -133,24 +116,6 @@ public class ReviewDbStorage implements ReviewStorage {
                 "FROM \"reviews\" r " +
                 "WHERE r.id = ?);";
         return jdbcTemplate.queryForObject(sql, Boolean.class, id);
-    }
-
-    private void checkReviewExists(int reviewId) {
-        if (!contains(reviewId)) {
-            throw new NotFoundException(ErrorMessageUtil.getNoEntityWithIdMessage("Нет отзыва", reviewId));
-        }
-    }
-
-    private void checkFilmExists(int filmId) {
-        if (!filmStorage.contains(filmId)) {
-            throw new NotFoundException(ErrorMessageUtil.getNoFilmWithIdMessage(filmId));
-        }
-    }
-
-    private void checkUserExists(int userId) {
-        if (!userStorage.contains(userId)) {
-            throw new NotFoundException(ErrorMessageUtil.getNoUserWithIdMessage(userId));
-        }
     }
 
     @AllArgsConstructor
