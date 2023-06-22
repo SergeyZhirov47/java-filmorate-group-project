@@ -127,28 +127,6 @@ public class ReviewDbStorage implements ReviewStorage {
         jdbcTemplate.update(sqlQuery, id);
     }
 
-    // ToDo
-    // Тут тоже работу с лайками обзоров вынести в отдельный Storage?
-    @Override
-    public void addLike(int id, int userId) {
-        setFeedback(id, userId, true);
-    }
-
-    @Override
-    public void deleteLike(int id, int userId) {
-        setFeedback(id, userId, null);
-    }
-
-    @Override
-    public void addDislike(int id, int userId) {
-        setFeedback(id, userId, false);
-    }
-
-    @Override
-    public void deleteDislike(int id, int userId) {
-        setFeedback(id, userId, null);
-    }
-
     @Override
     public boolean contains(int id) {
         final String sql = "SELECT EXISTS(SELECT r.id " +
@@ -157,45 +135,12 @@ public class ReviewDbStorage implements ReviewStorage {
         return jdbcTemplate.queryForObject(sql, Boolean.class, id);
     }
 
-    private void setFeedback(int reviewId, int userId, Boolean isUseful) {
-        final MapSqlParameterSource parameters = new MapSqlParameterSource();
-        parameters.addValue("reviewId", reviewId);
-        parameters.addValue("userId", userId);
-        parameters.addValue("isUseful", isUseful);
-
-        String sql;
-
-        if (containsFeedback(reviewId, userId)) {
-            sql = "UPDATE \"reviews_likes\"\n" +
-                    "SET isUseful = :isUseful\n" +
-                    "WHERE id_review = :reviewId AND id_user = :userId;";
-        } else {
-            sql = "INSERT INTO \"reviews_likes\"\n" +
-                    "(id_review, id_user, isUseful)\n" +
-                    "VALUES(:reviewId, :userId, :isUseful);";
-        }
-
-        namedParameterJdbcTemplate.update(sql, parameters);
-    }
-
-    private boolean containsFeedback(int reviewId, int userId) {
-        final String sql = "SELECT EXISTS(SELECT id " +
-                "FROM \"reviews_likes\" " +
-                "WHERE id_review = ? AND id_user = ?);";
-        return jdbcTemplate.queryForObject(sql, Boolean.class, reviewId, userId);
-    }
-
     private void checkReviewExists(int reviewId) {
         if (!contains(reviewId)) {
             throw new NotFoundException(ErrorMessageUtil.getNoEntityWithIdMessage("Нет отзыва", reviewId));
         }
     }
 
-    // ToDo
-    // у UserStorage есть метод checkUserExists. Он приватный и не в интерфейсе. Но делает то что нужно.
-    // Аналогично у FilmStorage есть checkFilmExists.
-    // Вынести в отдельный класс... валидации? или я еще как-то. Но если уберу или поменяю, то у других ничего не поломается?
-    // или фиг с ним...
     private void checkFilmExists(int filmId) {
         if (!filmStorage.contains(filmId)) {
             throw new NotFoundException(ErrorMessageUtil.getNoFilmWithIdMessage(filmId));

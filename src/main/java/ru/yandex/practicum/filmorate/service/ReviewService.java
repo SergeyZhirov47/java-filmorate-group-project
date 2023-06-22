@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.common.ErrorMessageUtil;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.storage.ReviewLikeStorage;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 
 import java.util.List;
@@ -16,6 +17,7 @@ public class ReviewService {
     protected final int defaultReviewsLimit = 10;
 
     protected final ReviewStorage reviewStorage;
+    protected final ReviewLikeStorage reviewLikeStorage;
 
     // ToDo
     // проверки на наличие фильма, пользователя и обзора перенести сюда из ReviewDbStorage
@@ -25,6 +27,8 @@ public class ReviewService {
     }
 
     public void update(final Review review) {
+        // ToDo
+        // наверное должны проверять, что filmId и userId не поменялись у отзыва (в тестах постмана этот момент не учитывается).
         reviewStorage.update(review);
     }
 
@@ -48,18 +52,18 @@ public class ReviewService {
     }
 
     public void addLike(int reviewId, int userId) {
-        reviewStorage.addLike(reviewId, userId);
+        reviewLikeStorage.addLike(reviewId, userId);
     }
 
     public void addDislike(int reviewId, int userId) {
-        reviewStorage.addDislike(reviewId, userId);
+        reviewLikeStorage.addDislike(reviewId, userId);
     }
 
     public void deleteLike(int reviewId, int userId) {
-        reviewStorage.deleteLike(reviewId, userId);
+        reviewLikeStorage.deleteLike(reviewId, userId);
     }
 
     public void deleteDislike(int reviewId, int userId) {
-        reviewStorage.deleteDislike(reviewId, userId);
+        reviewLikeStorage.deleteDislike(reviewId, userId);
     }
 }

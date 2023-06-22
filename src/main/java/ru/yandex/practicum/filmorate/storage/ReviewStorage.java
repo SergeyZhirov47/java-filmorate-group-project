@@ -16,13 +16,5 @@ public interface ReviewStorage {
 
     void deleteById(int id);
 
-    void addLike(int id, int userId);
-
-    void deleteLike(int id, int userId);
-
-    void addDislike(int id, int userId);
-
-    void deleteDislike(int id, int userId);
-
     boolean contains(int id);
 }
