@@ -27,7 +27,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class ReviewDbStorage implements ReviewStorage {
     private static final String SELECT_REVIEW_BASE = "SELECT r.id, r.id_user, r.id_film, r.content, r.isPositive, \n" +
-            "(rl1.likes_count - rl2.dislikes_count) AS rating\n" +
+            "(COALESCE(rl1.likes_count, 0) - COALESCE(rl2.dislikes_count, 0)) AS rating\n" +
             "FROM \"reviews\" r\n" +
             "LEFT JOIN (SELECT id_review, COUNT(id) as likes_count " +
             "FROM \"reviews_likes\" " +
@@ -37,11 +37,7 @@ public class ReviewDbStorage implements ReviewStorage {
             "FROM \"reviews_likes\" " +
             "WHERE isUseful = FALSE " +
             "GROUP BY id_review) rl2 ON rl2.id_review = r.id";
-
-    private static final String GROUP_BY_PART = " GROUP BY rl.id ";
     private static final String ORDER_PART = " ORDER BY rating DESC ";
-
-    private static final String SELECT_REVIEW = SELECT_REVIEW_BASE + GROUP_BY_PART;
 
     private final JdbcTemplate jdbcTemplate;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
@@ -55,7 +51,7 @@ public class ReviewDbStorage implements ReviewStorage {
     public Optional<Review> get(int id) {
         Review review;
         try {
-            review = jdbcTemplate.queryForObject(SELECT_REVIEW + " WHERE id = ?;", reviewRowMapper, id);
+            review = jdbcTemplate.queryForObject(SELECT_REVIEW_BASE + " WHERE r.id = ?;", reviewRowMapper, id);
         } catch (EmptyResultDataAccessException exp) {
             review = null;
         }
@@ -73,7 +69,6 @@ public class ReviewDbStorage implements ReviewStorage {
             parameters.addValue("filmId", filmId.get());
 
         }
-        sqlStrBuilder.append(GROUP_BY_PART);
         sqlStrBuilder.append(ORDER_PART);
         if (count.isPresent()) {
             sqlStrBuilder.append(" LIMIT :limitValue ");
@@ -99,7 +94,7 @@ public class ReviewDbStorage implements ReviewStorage {
             stmt.setInt(ReviewInsertColumn.USER_ID.getColumnIndex(), review.getUserId());
             stmt.setInt(ReviewInsertColumn.FILM_ID.getColumnIndex(), review.getFilmId());
             stmt.setString(ReviewInsertColumn.CONTENT.getColumnIndex(), review.getContent());
-            stmt.setBoolean(ReviewInsertColumn.IS_POSITIVE.getColumnIndex(), review.isPositive());
+            stmt.setBoolean(ReviewInsertColumn.IS_POSITIVE.getColumnIndex(), review.getIsPositive());
 
             return stmt;
         }, keyHolder);
@@ -115,18 +110,18 @@ public class ReviewDbStorage implements ReviewStorage {
         final int reviewId = review.getId();
 
         checkReviewExists(reviewId);
-        checkUserExists(review.getUserId());
-        checkFilmExists(review.getFilmId());
 
         final String updateSql = "UPDATE \"reviews\"\n" +
-                "SET id_user = ?, id_film = ?, content = ?, isPositive = ?\n" +
+                "SET content = ?, isPositive = ?\n" +
                 "WHERE id = ?;";
 
-        jdbcTemplate.update(updateSql, review.getUserId(), review.getFilmId(), review.getContent(), review.isPositive(), reviewId);
+        jdbcTemplate.update(updateSql, review.getContent(), review.getIsPositive(), reviewId);
     }
 
     @Override
     public void deleteById(int id) {
+        checkReviewExists(id);
+
         final String sqlQuery = "DELETE FROM \"reviews\" " +
                 "WHERE id = ?";
         jdbcTemplate.update(sqlQuery, id);
