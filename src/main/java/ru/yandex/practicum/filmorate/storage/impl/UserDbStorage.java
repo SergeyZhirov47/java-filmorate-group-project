@@ -14,14 +14,13 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.common.ErrorMessageUtil;
 import ru.yandex.practicum.filmorate.common.mappers.UserRowMapper;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Component
 @RequiredArgsConstructor
@@ -105,6 +104,67 @@ public class UserDbStorage implements UserStorage {
     public List<User> getAll() {
         final List<User> users = jdbcTemplate.query(SELECT_USER + ";", userRowMapper);
         return users;
+    }
+
+    @Override
+    public List<Integer> getRecommendedFilmsForUser(int id) {
+        get(id).orElseThrow(() -> new ValidationException("Пользователя с id не существует"));
+
+        Map<Integer, Collection<Integer>> userLikedFilmsMap = getLikedFilmsByUsers();
+
+        Collection<Integer> likedFilms = userLikedFilmsMap.get(id);
+        HashMap<Integer, Integer> commonLikes = new HashMap<>();
+
+        for (Map.Entry<Integer, Collection<Integer>> entry : userLikedFilmsMap.entrySet()) {
+            int userId = entry.getKey();
+            if (userId != id) {
+                Collection<Integer> films = entry.getValue();
+                for (int filmId : films) {
+                    if (likedFilms.contains(filmId)) {
+                        commonLikes.put(userId, commonLikes.getOrDefault(userId, 0) + 1);
+                    }
+                }
+            }
+        }
+
+        int maxCommonLikes = commonLikes.values().stream()
+                .max(Comparator.comparing(Integer::intValue))
+                .orElse(0);
+
+        Set<Integer> filmsId = new TreeSet<>();
+
+        for (Map.Entry<Integer, Integer> entry : commonLikes.entrySet()) {
+            int otherId = entry.getKey();
+            int commonLikeCount = entry.getValue();
+            if (commonLikeCount == maxCommonLikes) {
+                Collection<Integer> otherLikedFilms = userLikedFilmsMap.get(otherId);
+                for (int idFilm : otherLikedFilms) {
+                    if (!likedFilms.contains(idFilm)) {
+                        filmsId.add(idFilm);
+                    }
+                }
+            }
+        }
+
+        return new ArrayList<>(filmsId);
+    }
+
+    private Map<Integer, Collection<Integer>> getLikedFilmsByUsers() {
+        String sqlQuery = "SELECT id_user, id_film FROM likes";
+
+        List<Map<String, Object>> results = namedParameterJdbcTemplate.getJdbcTemplate().queryForList(sqlQuery);
+
+        Map<Integer, Collection<Integer>> userLikedFilmsMap = new HashMap<>();
+
+        for (Map<String, Object> row : results) {
+            int userId = (int) row.get("id_user");
+            int filmId = (int) row.get("id_film");
+
+            Collection<Integer> likedFilms = userLikedFilmsMap.computeIfAbsent(userId, k -> new ArrayList<>());
+            likedFilms.add(filmId);
+        }
+
+        return userLikedFilmsMap;
     }
 
     @Override
