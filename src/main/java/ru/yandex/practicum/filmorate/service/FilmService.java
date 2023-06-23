@@ -57,22 +57,7 @@ public class FilmService {
     }
 
     public List<Film> getPopularByGenresAndYear(Optional<Integer> count, Optional<Integer> genreId, Optional<Integer> year) {
-        List<Film> filmList = filmStorage.getPopular(count);
-        if (genreId.isPresent()) {
-            filmList = filmList.stream()
-                    .filter(film -> film.getGenres() != null)
-                    .filter(film -> film.getGenres().stream()
-                            .map(Genre::getId)
-                            .collect(Collectors.toList())
-                            .contains(genreId.get()))
-                    .collect(Collectors.toList());
-        }
-        if (year.isPresent()) {
-            filmList = filmList.stream()
-                    .filter(film -> film.getReleaseDate().getYear() == year.get())
-                    .collect(Collectors.toList());
-        }
-        return filmList;
+       return filmStorage.getPopularByGenresAndYear(count, genreId, year);
     }
 
     private boolean isUserExists(int id) {

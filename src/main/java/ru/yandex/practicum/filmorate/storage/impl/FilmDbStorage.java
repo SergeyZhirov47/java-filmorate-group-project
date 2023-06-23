@@ -25,6 +25,7 @@ import ru.yandex.practicum.filmorate.storage.MPAStorage;
 import java.sql.Date;
 import java.sql.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -189,6 +190,25 @@ public class FilmDbStorage implements FilmStorage {
         setFilmGenres(films, getFilmGenres(idList));
 
         return films;
+    }
+
+    public List<Film> getPopularByGenresAndYear(Optional<Integer> count, Optional<Integer> genreId, Optional<Integer> year) {
+        List<Film> filmList = getPopular(count);
+        if (genreId.isPresent()) {
+            filmList = filmList.stream()
+                    .filter(film -> film.getGenres() != null)
+                    .filter(film -> film.getGenres().stream()
+                            .map(Genre::getId)
+                            .collect(Collectors.toList())
+                            .contains(genreId.get()))
+                    .collect(Collectors.toList());
+        }
+        if (year.isPresent()) {
+            filmList = filmList.stream()
+                    .filter(film -> film.getReleaseDate().getYear() == year.get())
+                    .collect(Collectors.toList());
+        }
+        return filmList;
     }
 
     private void checkFilmExists(int filmId) {
