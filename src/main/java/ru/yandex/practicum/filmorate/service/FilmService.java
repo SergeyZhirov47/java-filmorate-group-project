@@ -54,6 +54,7 @@ public class FilmService {
 
         likeStorage.removeLike(filmId, userId);
     }
+
     public void deleteFilmById(int filmId) {
         checkFilmExists(filmId);
         filmStorage.deleteById(filmId);
