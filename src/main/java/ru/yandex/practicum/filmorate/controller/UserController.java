@@ -81,7 +81,7 @@ public class UserController {
 
     @GetMapping("{id}/recommendations")
     public List<Film> getRecommendedFilms(@PathVariable int id) {
-        log.info(String.format("Получен список рекомендованных фильмов доля пользователя с id %s", id));
+        log.info(String.format("Получен список рекомендованных фильмов для пользователя с id %s", id));
         return userService.getRecommendedFilms(id);
     }
 

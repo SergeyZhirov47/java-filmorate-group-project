@@ -8,6 +8,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
+import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Component;
@@ -25,6 +26,7 @@ import java.util.*;
 @Component
 @RequiredArgsConstructor
 public class UserDbStorage implements UserStorage {
+
     private static final String SELECT_USER = "SELECT \"id\", \"email\", \"login\", \"name\", \"birthday\"\n" +
             "FROM \"users\"";
     private final JdbcTemplate jdbcTemplate;
@@ -110,19 +112,27 @@ public class UserDbStorage implements UserStorage {
     public List<Integer> getRecommendedFilmsForUser(int id) {
         get(id).orElseThrow(() -> new ValidationException("Пользователя с id не существует"));
 
-        Map<Integer, Collection<Integer>> userLikedFilmsMap = getLikedFilmsByUsers();
+        final Map<Integer, Collection<Integer>> userLikedFilmsMap = getLikedFilmsByUsers();
 
-        Collection<Integer> likedFilms = userLikedFilmsMap.get(id);
-        HashMap<Integer, Integer> commonLikes = new HashMap<>();
+        final HashSet<Integer> likedFilms = new HashSet<>(userLikedFilmsMap.getOrDefault(id, Collections.emptySet()));
+        if (likedFilms.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        final Map<Integer, Integer> commonLikes = new HashMap<>();
 
         for (Map.Entry<Integer, Collection<Integer>> entry : userLikedFilmsMap.entrySet()) {
             int userId = entry.getKey();
             if (userId != id) {
                 Collection<Integer> films = entry.getValue();
+                int commonLikesCount = 0;
                 for (int filmId : films) {
                     if (likedFilms.contains(filmId)) {
-                        commonLikes.put(userId, commonLikes.getOrDefault(userId, 0) + 1);
+                        commonLikesCount++;
                     }
+                }
+                if (commonLikesCount > 0) {
+                    commonLikes.put(userId, commonLikesCount);
                 }
             }
         }
@@ -131,7 +141,7 @@ public class UserDbStorage implements UserStorage {
                 .max(Comparator.comparing(Integer::intValue))
                 .orElse(0);
 
-        Set<Integer> filmsId = new TreeSet<>();
+        final Set<Integer> filmsId = new TreeSet<>();
 
         for (Map.Entry<Integer, Integer> entry : commonLikes.entrySet()) {
             int otherId = entry.getKey();
@@ -150,17 +160,17 @@ public class UserDbStorage implements UserStorage {
     }
 
     private Map<Integer, Collection<Integer>> getLikedFilmsByUsers() {
-        String sqlQuery = "SELECT id_user, id_film FROM likes";
+        final String sqlQuery = "SELECT id_user, id_film FROM likes";
 
-        List<Map<String, Object>> results = namedParameterJdbcTemplate.getJdbcTemplate().queryForList(sqlQuery);
+        final List<Map<String, Object>> results = jdbcTemplate.queryForList(sqlQuery);
 
-        Map<Integer, Collection<Integer>> userLikedFilmsMap = new HashMap<>();
+        final Map<Integer, Collection<Integer>> userLikedFilmsMap = new HashMap<>();
 
         for (Map<String, Object> row : results) {
             int userId = (int) row.get("id_user");
             int filmId = (int) row.get("id_film");
 
-            Collection<Integer> likedFilms = userLikedFilmsMap.computeIfAbsent(userId, k -> new ArrayList<>());
+            Collection<Integer> likedFilms = userLikedFilmsMap.computeIfAbsent(userId, k -> new HashSet<>());
             likedFilms.add(filmId);
         }
 
