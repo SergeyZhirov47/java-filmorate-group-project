@@ -74,18 +74,21 @@ CREATE TABLE IF NOT EXISTS "reviews_likes" (
   "isUseful" boolean
 );
 
-ALTER TABLE "film_genre" ADD FOREIGN KEY ("film_id") REFERENCES "films" ("id");
+
+ALTER TABLE "film_genre" ADD FOREIGN KEY ("film_id") REFERENCES "films" ("id") on delete cascade;
 ALTER TABLE "film_genre" ADD FOREIGN KEY ("genre_id") REFERENCES "genres" ("id");
 ALTER TABLE "film_genre" ADD UNIQUE ("film_id", "genre_id");
 
 ALTER TABLE "films" ADD FOREIGN KEY ("mpa_rating_id") REFERENCES "MPA_ratings" ("id");
 
-ALTER TABLE "likes" ADD FOREIGN KEY ("id_user") REFERENCES "users" ("id");
-ALTER TABLE "likes" ADD FOREIGN KEY ("id_film") REFERENCES "films" ("id");
+ALTER TABLE "likes" ADD FOREIGN KEY ("id_user") REFERENCES "users" ("id") on delete cascade;
+ALTER TABLE "likes" ADD FOREIGN KEY ("id_film") REFERENCES "films" ("id") on delete cascade;
 ALTER TABLE "likes" ADD UNIQUE ("id_user", "id_film");
 
-ALTER TABLE "friendship" ADD FOREIGN KEY ("id_user") REFERENCES "users" ("id");
-ALTER TABLE "friendship" ADD FOREIGN KEY ("id_friend") REFERENCES "users" ("id");
+ALTER TABLE "friendship" ADD FOREIGN KEY ("id_user") REFERENCES "users" ("id") on delete cascade;
+
+ALTER TABLE "friendship" ADD FOREIGN KEY ("id_friend") REFERENCES "users" ("id") on delete cascade;
+
 ALTER TABLE "friendship" ADD UNIQUE ("id_user", "id_friend");
 
 ALTER TABLE "reviews" ADD FOREIGN KEY ("id_film") REFERENCES "films" ("id");

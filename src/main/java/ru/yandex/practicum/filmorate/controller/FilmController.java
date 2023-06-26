@@ -66,4 +66,10 @@ public class FilmController {
         log.info(String.format("GET /films/popular?count={count}, {count} = %s", count.isPresent() ? count.get() : "не указан"));
         return filmService.getPopular(count);
     }
+
+    @DeleteMapping("/{id}")
+    public void deleteFilmById(@PathVariable(name = "id") int id) {
+        log.info(String.format("DELETE /films/{id}, {id} = %s", id));
+        filmService.deleteFilmById(id);
+    }
 }
