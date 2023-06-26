@@ -1,8 +1,10 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
 import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
@@ -12,10 +14,7 @@ import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Component
 @RequiredArgsConstructor
@@ -23,6 +22,7 @@ public class DirectorDbStorage implements DirectorStorage {
     private static final String SELECT_DIRECTOR = "SELECT * FROM directors";
     private final JdbcTemplate jdbcTemplate;
     private SimpleJdbcInsert simpleJdbcInsert;
+    private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final DirectorRowMapper directorRowMapper = new DirectorRowMapper();
 
     @Override
@@ -77,5 +77,17 @@ public class DirectorDbStorage implements DirectorStorage {
         final Map<String, Object> values = new HashMap<>();
         values.put("name", director.getName());
         return values;
+    }
+
+    @Override
+    public List<Director> getDirectorsByIds(final List<Integer> idList) {
+        if (idList.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        final String sql = SELECT_DIRECTOR + " WHERE director_id in (:ids);";
+        final SqlParameterSource parameters = new MapSqlParameterSource("ids", idList);
+
+        return namedParameterJdbcTemplate.query(sql, parameters, directorRowMapper);
     }
 }
