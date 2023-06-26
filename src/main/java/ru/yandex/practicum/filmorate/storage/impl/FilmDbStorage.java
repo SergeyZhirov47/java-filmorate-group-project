@@ -103,6 +103,7 @@ public class FilmDbStorage implements FilmStorage {
     public List<Film> getAll() {
         final List<Film> films = jdbcTemplate.query(SELECT_FILM + ";", filmRowMapper);
         setFilmGenres(films, getFilmGenres());
+        setFilmDirectors(films, getFilmDirectors());
 
         return films;
     }
@@ -149,7 +150,8 @@ public class FilmDbStorage implements FilmStorage {
 
         checkFilmExists(filmId);
         checkRatingExists(film);
-        checkRatingExists(film);
+        checkDirectorExists(film);
+
 
         final String updateFilmSql = "UPDATE \"films\" SET " +
                 "name = ?, description = ?, release_date = ?, duration = ?, mpa_rating_id = ?" +
@@ -158,9 +160,11 @@ public class FilmDbStorage implements FilmStorage {
         final Integer ratingId = isNull(film.getRating()) ? null : film.getRating().getId();
         jdbcTemplate.update(updateFilmSql, film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration(), ratingId, filmId);
 
-        // обновляем жанры фильма (сначала удаляем все, потом записываем текущие).
+        // обновляем жанры и режиссеров фильма (сначала удаляем все, потом записываем текущие).
         deleteFilmGenre(film.getId());
         saveFilmGenres(film);
+        deleteFilmDirector(film.getId());
+        saveFilmDirectors(film);
     }
 
     @Override
@@ -334,6 +338,31 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
+    private Map<Integer, Set<Director>> getFilmDirectors() {
+        final String sql = SELECT_FILM_DIRECTORS + " ORDER BY d.\"director_id\";";
+        return jdbcTemplate.query(sql, this::extractFilmDirectors);
+    }
+
+    private Map<Integer, Set<Director>> extractFilmDirectors(final ResultSet rs) throws SQLException {
+        final Map<Integer, Set<Director>> resultMap = new HashMap<>();
+
+        while (rs.next()) {
+            int filmId = rs.getInt("id_film");
+            final Director director = getDirectorFromResultSet(rs);
+
+            // если режиссеров у фильма нет, то должен быть пустой список
+            if (!resultMap.containsKey(filmId)) {
+                resultMap.put(filmId, new LinkedHashSet<>());
+            }
+
+            if (nonNull(director)) {
+                resultMap.get(filmId).add(director);
+            }
+        }
+
+        return resultMap;
+    }
+
     private void saveFilmDirectors(final Film film) {
         if (isNull(film.getDirectors())) {
             return;
@@ -359,6 +388,15 @@ public class FilmDbStorage implements FilmStorage {
         });
     }
 
+    private void setFilmDirectors(final List<Film> films,
+            final Map<Integer, Set<Director>> filmsDirectors) {
+        if (!films.isEmpty()) {
+            films.forEach(f -> {
+                f.setDirectors(filmsDirectors.get(f.getId()));
+            });
+        }
+    }
+
     private Set<Director> getFilmDirectors(int filmId) {
         final String selectFilmDirectors = SELECT_FILM_DIRECTORS + " WHERE f.\"id\" = ? ORDER BY d.\"director_id\";";
 
@@ -378,6 +416,12 @@ public class FilmDbStorage implements FilmStorage {
 
         // если режиссеров у фильма нет, то должен быть пустой список
         return Objects.requireNonNullElse(filmGenres, Collections.emptySet());
+    }
+
+    private void deleteFilmDirector(int filmId) {
+        final String deleteFilmDirectorsSql = "DELETE FROM \"films_directors\" " +
+                "WHERE film_id = ?";
+        jdbcTemplate.update(deleteFilmDirectorsSql, filmId);
     }
 
     private Director getDirectorFromResultSet(final ResultSet rs) throws SQLException {
