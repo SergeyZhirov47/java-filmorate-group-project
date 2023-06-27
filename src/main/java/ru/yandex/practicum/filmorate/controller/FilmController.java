@@ -73,4 +73,10 @@ public class FilmController {
         log.info("Получен запрос на получение фильмов режиссера");
         return filmService.getSortedFilmByDirector(param, director_id);
     }
+
+    @DeleteMapping("/{id}")
+    public void deleteFilmById(@PathVariable(name = "id") int id) {
+        log.info(String.format("DELETE /films/{id}, {id} = %s", id));
+        filmService.deleteFilmById(id);
+    }
 }

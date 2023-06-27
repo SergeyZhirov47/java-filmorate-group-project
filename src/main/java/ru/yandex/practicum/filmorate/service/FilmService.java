@@ -55,6 +55,11 @@ public class FilmService {
         likeStorage.removeLike(filmId, userId);
     }
 
+    public void deleteFilmById(int filmId) {
+        checkFilmExists(filmId);
+        filmStorage.deleteById(filmId);
+    }
+
     public List<Film> getPopular(final Optional<Integer> count) {
         Optional<Integer> countOrDefault = count.or(() -> Optional.of(defaultPopularLimit));
         return filmStorage.getPopular(countOrDefault);
