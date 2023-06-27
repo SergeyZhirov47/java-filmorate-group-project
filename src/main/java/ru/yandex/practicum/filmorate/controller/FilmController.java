@@ -66,4 +66,11 @@ public class FilmController {
         log.info(String.format("GET /films/popular?count={count}, {count} = %s", count.isPresent() ? count.get() : "не указан"));
         return filmService.getPopular(count);
     }
+
+    @GetMapping("/director/{directorId}")
+    public List<Film> getSortedFilmByDyrector(@RequestParam(name = "sortBy") String param,
+            @PathVariable int director_id) {
+        log.info("Получен запрос на получение фильмов режиссера");
+        return filmService.getSortedFilmByDirector(param, director_id);
+    }
 }

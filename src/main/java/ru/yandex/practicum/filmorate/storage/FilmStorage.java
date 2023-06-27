@@ -23,4 +23,6 @@ public interface FilmStorage {
     boolean contains(int id);
 
     List<Film> getPopular(Optional<Integer> count);
+
+    List<Film> getSortedFilmByDirector(String param, int director_id);
 }

@@ -11,6 +11,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.common.ErrorMessageUtil;
 import ru.yandex.practicum.filmorate.common.mappers.FilmRowMapper;
@@ -200,8 +201,23 @@ public class FilmDbStorage implements FilmStorage {
         final List<Film> films = jdbcTemplate.query(selectPopular + ";", filmRowMapper);
         final List<Integer> idList = films.stream().map(Film::getId).collect(toUnmodifiableList());
         setFilmGenres(films, getFilmGenres(idList));
-
+        setFilmDirectors(films, getFilmDirectors(idList));
         return films;
+    }
+
+    @Override
+    public List<Film> getSortedFilmByDirector(String param, int director_id) {
+        String sql = "SELECT f.\"id\", f.\"name\", f.\"description\" , f.\"release_date\" , f.\"duration\" , f.\"mpa_rating_id\"  FROM \"films\" f\n"
+                + "RIGHT JOIN \"films_directors\" fd ON fd.\"film_id\" = f.\"id\" \n"
+                + "WHERE \"director_id\" = ?\n";
+        switch (param) {
+            case ("year") :
+                sql += "ORDER BY SELECT EXTRACT (YEAR FROM f.\"release_date\");";
+                break;
+            case ("likes") :
+                sql += "";
+        }
+        return null;
     }
 
     private void checkFilmExists(int filmId) {
@@ -338,6 +354,16 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
+    private Map<Integer, Set<Director>> getFilmDirectors(final List<Integer> filmIds) {
+        if (filmIds.isEmpty()) {
+            return new HashMap<>();
+        }
+        final String sql = SELECT_FILM_DIRECTORS + " WHERE f.\"id\" IN (:ids) ORDER BY d.\"director_id\";";
+        final SqlParameterSource parameters = new MapSqlParameterSource("ids", filmIds);
+
+        return namedParameterJdbcTemplate.query(sql, parameters, this::extractFilmDirectors);
+    }
+
     private Map<Integer, Set<Director>> getFilmDirectors() {
         final String sql = SELECT_FILM_DIRECTORS + " ORDER BY d.\"director_id\";";
         return jdbcTemplate.query(sql, this::extractFilmDirectors);
@@ -445,7 +471,7 @@ public class FilmDbStorage implements FilmStorage {
             final boolean directorsNotExists = directorStorage.getDirectorsByIds(directorsListIds)
                     .isEmpty();
             if (directorsNotExists) {
-                throw new ValidationException(String.format("Не существует жанра/жанров с id из списка %s",
+                throw new ValidationException(String.format("Не существует режиссера/режиссеров с id из списка %s",
                         directorsListIds.stream().map(String::valueOf).collect(joining(", "))));
             }
         }
