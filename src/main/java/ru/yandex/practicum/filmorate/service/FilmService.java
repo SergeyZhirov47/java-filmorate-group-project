@@ -5,14 +5,12 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.common.ErrorMessageUtil;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.LikeStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -58,6 +56,11 @@ public class FilmService {
 
     public List<Film> getPopularByGenresAndYear(Optional<Integer> count, Optional<Integer> genreId, Optional<Integer> year) {
        return filmStorage.getPopularByGenresAndYear(count, genreId, year);
+    }
+
+    public void deleteFilmById(int filmId) {
+        checkFilmExists(filmId);
+        filmStorage.deleteById(filmId);
     }
 
     private boolean isUserExists(int id) {
