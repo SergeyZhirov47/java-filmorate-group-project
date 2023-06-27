@@ -86,4 +86,8 @@ public class FilmService {
     private void checkUserExists(int id) {
         checkExistsWithException(isUserExists(id), ErrorMessageUtil.getNoUserWithIdMessage(id));
     }
+
+    public List<Film> getSortedFilmByDirector(String param, int director_id) {
+        return filmStorage.getSortedFilmByDirector(param, director_id);
+    }
 }

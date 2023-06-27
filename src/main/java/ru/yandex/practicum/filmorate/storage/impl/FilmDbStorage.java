@@ -11,13 +11,16 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.common.ErrorMessageUtil;
 import ru.yandex.practicum.filmorate.common.mappers.FilmRowMapper;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
+import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.MPAStorage;
@@ -54,8 +57,14 @@ public class FilmDbStorage implements FilmStorage {
             "FROM \"films\" f\n" +
             "LEFT JOIN \"film_genre\" fg ON fg.\"film_id\" = f.\"id\"\n" +
             "LEFT JOIN \"genres\" g ON g.\"id\" = fg.\"genre_id\"\n";
+    private static final String SELECT_FILM_DIRECTORS = "SELECT f.\"id\" as id_film, d.\"director_id\" as id_director, "
+            + "d.\"name\" as name_director\n" +
+            "FROM \"films\" f\n" +
+            "LEFT JOIN \"films_directors\" fd ON fd.\"film_id\" = f.\"id\"\n" +
+            "LEFT JOIN \"directors\" d ON d.\"director_id\" = fd.\"director_id\"\n";
     protected final GenreStorage genreStorage;
     protected final MPAStorage mpaStorage;
+    protected final DirectorStorage directorStorage;
     private final JdbcTemplate jdbcTemplate;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final FilmRowMapper filmRowMapper = new FilmRowMapper();
@@ -69,10 +78,14 @@ public class FilmDbStorage implements FilmStorage {
             film = null;
         }
 
-        // еще нужно достать жанры
+        // еще нужно достать жанры и режиссеров
         if (nonNull(film)) {
             final Set<Genre> filmGenres = getFilmGenres(id);
             film.setGenres(filmGenres);
+        }
+        if (nonNull(film)) {
+            final Set<Director> filmDirectors = getFilmDirectors(id);
+            film.setDirectors(filmDirectors);
         }
 
         return Optional.ofNullable(film);
@@ -96,6 +109,7 @@ public class FilmDbStorage implements FilmStorage {
     public List<Film> getAll() {
         final List<Film> films = jdbcTemplate.query(SELECT_FILM + ";", filmRowMapper);
         setFilmGenres(films, getFilmGenres());
+        setFilmDirectors(films, getFilmDirectors());
 
         return films;
     }
@@ -104,7 +118,7 @@ public class FilmDbStorage implements FilmStorage {
     public int add(final Film film) {
         checkRatingExists(film);
         checkGenresExists(film);
-
+        checkDirectorExists(film);
         final String insertFilmSql = "INSERT into \"films\" (name, description, release_date, duration, mpa_rating_id) " +
                 "VALUES (?, ?, ?, ?, ?)";
 
@@ -129,8 +143,9 @@ public class FilmDbStorage implements FilmStorage {
         int filmId = Objects.requireNonNull(keyHolder.getKey()).intValue();
         film.setId(filmId);
 
-        // Сохраняем жанры фильма
+        // Сохраняем жанры и режиссеров фильма
         saveFilmGenres(film);
+        saveFilmDirectors(film);
 
         return filmId;
     }
@@ -141,7 +156,8 @@ public class FilmDbStorage implements FilmStorage {
 
         checkFilmExists(filmId);
         checkRatingExists(film);
-        checkRatingExists(film);
+        checkDirectorExists(film);
+
 
         final String updateFilmSql = "UPDATE \"films\" SET " +
                 "name = ?, description = ?, release_date = ?, duration = ?, mpa_rating_id = ?" +
@@ -150,9 +166,11 @@ public class FilmDbStorage implements FilmStorage {
         final Integer ratingId = isNull(film.getRating()) ? null : film.getRating().getId();
         jdbcTemplate.update(updateFilmSql, film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration(), ratingId, filmId);
 
-        // обновляем жанры фильма (сначала удаляем все, потом записываем текущие).
+        // обновляем жанры и режиссеров фильма (сначала удаляем все, потом записываем текущие).
         deleteFilmGenre(film.getId());
         saveFilmGenres(film);
+        deleteFilmDirector(film.getId());
+        saveFilmDirectors(film);
     }
 
     @Override
@@ -188,8 +206,23 @@ public class FilmDbStorage implements FilmStorage {
         final List<Film> films = jdbcTemplate.query(selectPopular + ";", filmRowMapper);
         final List<Integer> idList = films.stream().map(Film::getId).collect(toUnmodifiableList());
         setFilmGenres(films, getFilmGenres(idList));
-
+        setFilmDirectors(films, getFilmDirectors(idList));
         return films;
+    }
+
+    @Override
+    public List<Film> getSortedFilmByDirector(String param, int director_id) {
+        String sql = "SELECT f.\"id\", f.\"name\", f.\"description\" , f.\"release_date\" , f.\"duration\" , f.\"mpa_rating_id\"  FROM \"films\" f\n"
+                + "RIGHT JOIN \"films_directors\" fd ON fd.\"film_id\" = f.\"id\" \n"
+                + "WHERE \"director_id\" = ?\n";
+        switch (param) {
+            case ("year") :
+                sql += "ORDER BY SELECT EXTRACT (YEAR FROM f.\"release_date\");";
+                break;
+            case ("likes") :
+                sql += "";
+        }
+        return null;
     }
 
     public List<Film> getPopularByGenresAndYear(Optional<Integer> count, Optional<Integer> genreId, Optional<Integer> year) {
@@ -341,6 +374,129 @@ public class FilmDbStorage implements FilmStorage {
             boolean genresNotExists = genreStorage.getGenreById(genresListIds).isEmpty();
             if (genresNotExists) {
                 throw new ValidationException(String.format("Не существует жанра/жанров с id из списка %s", genresListIds.stream().map(String::valueOf).collect(joining(", "))));
+            }
+        }
+    }
+
+    private Map<Integer, Set<Director>> getFilmDirectors(final List<Integer> filmIds) {
+        if (filmIds.isEmpty()) {
+            return new HashMap<>();
+        }
+        final String sql = SELECT_FILM_DIRECTORS + " WHERE f.\"id\" IN (:ids) ORDER BY d.\"director_id\";";
+        final SqlParameterSource parameters = new MapSqlParameterSource("ids", filmIds);
+
+        return namedParameterJdbcTemplate.query(sql, parameters, this::extractFilmDirectors);
+    }
+
+    private Map<Integer, Set<Director>> getFilmDirectors() {
+        final String sql = SELECT_FILM_DIRECTORS + " ORDER BY d.\"director_id\";";
+        return jdbcTemplate.query(sql, this::extractFilmDirectors);
+    }
+
+    private Map<Integer, Set<Director>> extractFilmDirectors(final ResultSet rs) throws SQLException {
+        final Map<Integer, Set<Director>> resultMap = new HashMap<>();
+
+        while (rs.next()) {
+            int filmId = rs.getInt("id_film");
+            final Director director = getDirectorFromResultSet(rs);
+
+            // если режиссеров у фильма нет, то должен быть пустой список
+            if (!resultMap.containsKey(filmId)) {
+                resultMap.put(filmId, new LinkedHashSet<>());
+            }
+
+            if (nonNull(director)) {
+                resultMap.get(filmId).add(director);
+            }
+        }
+
+        return resultMap;
+    }
+
+    private void saveFilmDirectors(final Film film) {
+        if (isNull(film.getDirectors())) {
+            return;
+        }
+
+        int filmId = film.getId();
+        final String insertFilmDirectorsSql = "INSERT INTO \"films_directors\"\n" +
+                "(\"film_id\", \"director_id\")\n" +
+                "VALUES(?, ?);";
+
+        final List<Integer> directorIds = film.getDirectors()
+                .stream().map(Director::getId).collect(toUnmodifiableList());
+
+        jdbcTemplate.batchUpdate(insertFilmDirectorsSql, new BatchPreparedStatementSetter() {
+            public void setValues(PreparedStatement ps, int i) throws SQLException {
+                ps.setInt(1, filmId);
+                ps.setInt(2, directorIds.get(i));
+            }
+
+            public int getBatchSize() {
+                return film.getDirectors().size();
+            }
+        });
+    }
+
+    private void setFilmDirectors(final List<Film> films,
+            final Map<Integer, Set<Director>> filmsDirectors) {
+        if (!films.isEmpty()) {
+            films.forEach(f -> {
+                f.setDirectors(filmsDirectors.get(f.getId()));
+            });
+        }
+    }
+
+    private Set<Director> getFilmDirectors(int filmId) {
+        final String selectFilmDirectors = SELECT_FILM_DIRECTORS + " WHERE f.\"id\" = ? ORDER BY d.\"director_id\";";
+
+        final Set<Director> filmGenres = jdbcTemplate.query(selectFilmDirectors, rs -> {
+            final Set<Director> resultList = new LinkedHashSet<>();
+
+            while (rs.next()) {
+                final Director director = getDirectorFromResultSet(rs);
+
+                if (nonNull(director)) {
+                    resultList.add(director);
+                }
+            }
+
+            return resultList;
+        }, filmId);
+
+        // если режиссеров у фильма нет, то должен быть пустой список
+        return Objects.requireNonNullElse(filmGenres, Collections.emptySet());
+    }
+
+    private void deleteFilmDirector(int filmId) {
+        final String deleteFilmDirectorsSql = "DELETE FROM \"films_directors\" " +
+                "WHERE film_id = ?";
+        jdbcTemplate.update(deleteFilmDirectorsSql, filmId);
+    }
+
+    private Director getDirectorFromResultSet(final ResultSet rs) throws SQLException {
+        Director director = null;
+
+        int directorId = rs.getInt("id_director");
+        if (!rs.wasNull()) {
+            director = Director.builder()
+                    .id(directorId)
+                    .name(rs.getString("name_director"))
+                    .build();
+        }
+
+        return director;
+    }
+
+    private void checkDirectorExists(final Film film) {
+        if (nonNull(film.getDirectors())) {
+            final List<Integer> directorsListIds = film.getDirectors().stream()
+                    .map(Director::getId).collect(toUnmodifiableList());
+            final boolean directorsNotExists = directorStorage.getDirectorsByIds(directorsListIds)
+                    .isEmpty();
+            if (directorsNotExists) {
+                throw new ValidationException(String.format("Не существует режиссера/режиссеров с id из списка %s",
+                        directorsListIds.stream().map(String::valueOf).collect(joining(", "))));
             }
         }
     }

@@ -70,6 +70,13 @@ public class FilmController {
         return filmService.getPopularByGenresAndYear(count, genreId, year);
     }
 
+    @GetMapping("/director/{directorId}")
+    public List<Film> getSortedFilmByDyrector(@RequestParam(name = "sortBy") String param,
+            @PathVariable int director_id) {
+        log.info("Получен запрос на получение фильмов режиссера");
+        return filmService.getSortedFilmByDirector(param, director_id);
+    }
+
     @DeleteMapping("/{id}")
     public void deleteFilmById(@PathVariable(name = "id") int id) {
         log.info(String.format("DELETE /films/{id}, {id} = %s", id));
