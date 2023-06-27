@@ -4,7 +4,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.common.ErrorMessageUtil;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.FriendStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -16,6 +18,7 @@ import java.util.Optional;
 public class UserService {
     protected final UserStorage userStorage;
     protected final FriendStorage friendStorage;
+    private final FilmStorage filmStorage;
 
     public int add(User user) {
         user.setEmptyNameAsLogin();
@@ -71,6 +74,10 @@ public class UserService {
         checkOtherUserExists(otherUserId);
 
         return friendStorage.getCommonFriends(userId, otherUserId);
+    }
+
+    public List<Film> getRecommendedFilms(int id) {
+        return filmStorage.get(userStorage.getRecommendedFilmsForUser(id));
     }
 
     private boolean isUserExists(int id) {
