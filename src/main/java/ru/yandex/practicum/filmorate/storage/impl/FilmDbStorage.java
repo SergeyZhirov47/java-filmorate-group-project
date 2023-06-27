@@ -210,7 +210,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getSortedFilmByDirector(String param, int director_id) {
+    public List<Film> getSortedFilmByDirector(String param, int directorId) {
         String sql = "SELECT f.\"id\", f.\"name\", f.\"description\" , f.\"release_date\" , f.\"duration\" , f.\"mpa_rating_id\"  FROM \"films\" f\n"
                 + "RIGHT JOIN \"films_directors\" fd ON fd.\"film_id\" = f.\"id\" \n"
                 + "WHERE \"director_id\" = ?\n";
