@@ -63,7 +63,7 @@ public class FilmService {
     public void deleteFilmById(int filmId) {
         checkFilmExists(filmId);
         filmStorage.deleteById(filmId);
-    }  
+    }
 
     private boolean isUserExists(int id) {
         return userStorage.contains(id);
