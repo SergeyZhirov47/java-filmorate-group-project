@@ -21,4 +21,6 @@ public interface UserStorage {
     void deleteById(int id);
 
     boolean contains(int id);
+
+    List<Integer> getRecommendedFilmsForUser(int id);
 }

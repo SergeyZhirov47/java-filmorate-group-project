@@ -54,6 +54,7 @@ public class FilmService {
         likeStorage.removeLike(filmId, userId);
     }
 
+
     public List<Film> getPopularByGenresAndYear(Optional<Integer> count, Optional<Integer> genreId,
                                                 Optional<Integer> year) {
        return filmStorage.getPopularByGenresAndYear(count, genreId, year);
@@ -62,7 +63,7 @@ public class FilmService {
     public void deleteFilmById(int filmId) {
         checkFilmExists(filmId);
         filmStorage.deleteById(filmId);
-    }
+    }  
 
     private boolean isUserExists(int id) {
         return userStorage.contains(id);
