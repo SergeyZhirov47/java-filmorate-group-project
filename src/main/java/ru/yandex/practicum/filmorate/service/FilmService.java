@@ -57,7 +57,7 @@ public class FilmService {
 
     public List<Film> getPopularByGenresAndYear(Optional<Integer> count, Optional<Integer> genreId,
                                                 Optional<Integer> year) {
-        return filmStorage.getPopularByGenresAndYear(count, genreId, year);
+       return filmStorage.getPopularByGenresAndYear(count, genreId, year);
     }
 
     public void deleteFilmById(int filmId) {
