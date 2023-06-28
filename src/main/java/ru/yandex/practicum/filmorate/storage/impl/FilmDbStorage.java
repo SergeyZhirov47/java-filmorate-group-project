@@ -163,8 +163,7 @@ public class FilmDbStorage implements FilmStorage {
                 "WHERE id = ?";
 
         final Integer ratingId = isNull(film.getRating()) ? null : film.getRating().getId();
-        jdbcTemplate.update(updateFilmSql, film.getName(), film.getDescription(), film.getReleaseDate(),
-                film.getDuration(), ratingId, filmId);
+        jdbcTemplate.update(updateFilmSql, film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration(), ratingId, filmId);
 
         // обновляем жанры и режиссеров фильма (сначала удаляем все, потом записываем текущие).
         deleteFilmGenre(film.getId());
@@ -500,7 +499,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     private void setFilmDirectors(final List<Film> films,
-                                  final Map<Integer, Set<Director>> filmsDirectors) {
+            final Map<Integer, Set<Director>> filmsDirectors) {
         if (!films.isEmpty()) {
             films.forEach(f -> {
                 f.setDirectors(filmsDirectors.get(f.getId()));
