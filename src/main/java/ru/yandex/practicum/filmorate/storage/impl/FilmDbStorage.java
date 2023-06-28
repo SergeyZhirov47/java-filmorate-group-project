@@ -11,7 +11,6 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
-import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.common.ErrorMessageUtil;
 import ru.yandex.practicum.filmorate.common.mappers.FilmRowMapper;
@@ -37,21 +36,25 @@ import static java.util.stream.Collectors.toUnmodifiableList;
 @Component
 @RequiredArgsConstructor
 public class FilmDbStorage implements FilmStorage {
-    private static final String SELECT_FILM = "SELECT f.\"id\", f.\"name\", f.\"description\", f.\"release_date\", f.\"duration\", mr.\"id\" AS id_rating, mr.\"name\" AS name_rating\n" +
-            "FROM \"films\" f\n" +
-            "LEFT JOIN \"MPA_ratings\" mr ON mr.\"id\" = f.\"mpa_rating_id\"";
-    private static final String SELECT_FILM_AND_LIKES = "SELECT f.\"id\", f.\"name\", f.\"description\", f.\"release_date\", f.\"duration\", " +
-            "mr.\"id\" AS id_rating, mr.\"name\" AS name_rating, COUNT(l.\"id_user\") AS likesCount\n" +
-            "FROM \"films\" f\n" +
-            "LEFT JOIN \"MPA_ratings\" mr ON mr.\"id\" = f.\"mpa_rating_id\" \n" +
-            "LEFT JOIN \"likes\" l ON l.\"id_film\" = f.\"id\" \n" +
-            "GROUP BY f.\"id\" \n" +
-            "ORDER BY likesCount DESC";
+    private static final String SELECT_FILM =
+            "SELECT f.\"id\", f.\"name\", f.\"description\", f.\"release_date\", f.\"duration\", mr.\"id\" AS id_rating, mr.\"name\" AS name_rating\n"
+                    +
+                    "FROM \"films\" f\n" +
+                    "LEFT JOIN \"MPA_ratings\" mr ON mr.\"id\" = f.\"mpa_rating_id\"";
+    private static final String SELECT_FILM_AND_LIKES =
+            "SELECT f.\"id\", f.\"name\", f.\"description\", f.\"release_date\", f.\"duration\", " +
+                    "mr.\"id\" AS id_rating, mr.\"name\" AS name_rating, COUNT(l.\"id_user\") AS likesCount\n" +
+                    "FROM \"films\" f\n" +
+                    "LEFT JOIN \"MPA_ratings\" mr ON mr.\"id\" = f.\"mpa_rating_id\" \n" +
+                    "LEFT JOIN \"likes\" l ON l.\"id_film\" = f.\"id\" \n" +
+                    "GROUP BY f.\"id\" \n" +
+                    "ORDER BY likesCount DESC";
     private static final String SELECT_FILM_BY_ID = SELECT_FILM + " WHERE f.\"id\" = ?";
-    private static final String SELECT_FILM_GENRES = "SELECT f.\"id\" as id_film, g.\"id\" as id_genre, g.\"name\" as name_genre\n" +
-            "FROM \"films\" f\n" +
-            "LEFT JOIN \"film_genre\" fg ON fg.\"film_id\" = f.\"id\"\n" +
-            "LEFT JOIN \"genres\" g ON g.\"id\" = fg.\"genre_id\"\n";
+    private static final String SELECT_FILM_GENRES =
+            "SELECT f.\"id\" as id_film, g.\"id\" as id_genre, g.\"name\" as name_genre\n" +
+                    "FROM \"films\" f\n" +
+                    "LEFT JOIN \"film_genre\" fg ON fg.\"film_id\" = f.\"id\"\n" +
+                    "LEFT JOIN \"genres\" g ON g.\"id\" = fg.\"genre_id\"\n";
     private static final String SELECT_FILM_DIRECTORS = "SELECT f.\"id\" as id_film, d.\"director_id\" as id_director, "
             + "d.\"name\" as name_director\n" +
             "FROM \"films\" f\n" +
@@ -101,20 +104,12 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getAll() {
-        final List<Film> films = jdbcTemplate.query(SELECT_FILM + ";", filmRowMapper);
-        setFilmGenres(films, getFilmGenres());
-        setFilmDirectors(films, getFilmDirectors());
-
-        return films;
-    }
-
-    @Override
     public int add(final Film film) {
         checkRatingExists(film);
         checkGenresExists(film);
         checkDirectorExists(film);
-        final String insertFilmSql = "INSERT into \"films\" (name, description, release_date, duration, mpa_rating_id) " +
+        final String insertFilmSql = "INSERT into \"films\" (name, description, release_date, duration, mpa_rating_id) "
+                +
                 "VALUES (?, ?, ?, ?, ?)";
 
         final KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -159,7 +154,8 @@ public class FilmDbStorage implements FilmStorage {
                 "WHERE id = ?";
 
         final Integer ratingId = isNull(film.getRating()) ? null : film.getRating().getId();
-        jdbcTemplate.update(updateFilmSql, film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration(), ratingId, filmId);
+        jdbcTemplate.update(updateFilmSql, film.getName(), film.getDescription(), film.getReleaseDate(),
+                film.getDuration(), ratingId, filmId);
 
         // обновляем жанры и режиссеров фильма (сначала удаляем все, потом записываем текущие).
         deleteFilmGenre(film.getId());
@@ -179,6 +175,15 @@ public class FilmDbStorage implements FilmStorage {
         final String sqlQuery = "DELETE FROM \"films\" " +
                 "WHERE id = ?";
         jdbcTemplate.update(sqlQuery, id);
+    }
+
+    @Override
+    public List<Film> getAll() {
+        final List<Film> films = jdbcTemplate.query(SELECT_FILM + ";", filmRowMapper);
+        setFilmGenres(films, getFilmGenres());
+        setFilmDirectors(films, getFilmDirectors());
+
+        return films;
     }
 
     @Override
@@ -206,18 +211,34 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getSortedFilmByDirector(String param, int director_id) {
-        String sql = "SELECT f.\"id\", f.\"name\", f.\"description\" , f.\"release_date\" , f.\"duration\" , f.\"mpa_rating_id\"  FROM \"films\" f\n"
-                + "RIGHT JOIN \"films_directors\" fd ON fd.\"film_id\" = f.\"id\" \n"
-                + "WHERE \"director_id\" = ?\n";
-        switch (param) {
-            case ("year") :
-                sql += "ORDER BY SELECT EXTRACT (YEAR FROM f.\"release_date\");";
-                break;
-            case ("likes") :
-                sql += "";
+    public List<Film> getSortedFilmByDirector(String param, int directorId) {
+        if (directorStorage.getDirectorsByIds(List.of(directorId)).isEmpty()) {
+            throw new NotFoundException("Режиссера с данным ID не найдено");
         }
-        return null;
+        String sql =
+                "SELECT f.\"id\", f.\"name\", f.\"description\" , f.\"release_date\" , f.\"duration\" , "
+                        + "f.\"mpa_rating_id\" as id_rating, mr.\"name\" AS name_rating FROM \"films\" f\n"
+                        + "RIGHT JOIN \"films_directors\" fd ON fd.\"film_id\" = f.\"id\" \n"
+                        + "LEFT JOIN \"MPA_ratings\" mr ON mr.\"id\" = f.\"mpa_rating_id\" \n";
+        switch (param) {
+            case ("year"):
+                sql += "WHERE \"director_id\" = ?\n"
+                        + "ORDER BY SELECT EXTRACT (YEAR FROM f.\"release_date\");";
+                break;
+            case ("likes"):
+                sql += "LEFT JOIN \"likes\" l ON l.\"id_film\" = f.\"id\" \n"
+                        + "WHERE \"director_id\" = ?\n"
+                        + "GROUP BY f.\"id\" \n"
+                        + "ORDER BY COUNT(l.\"id_user\") DESC;";
+                break;
+            default:
+                throw new ValidationException("Указан неверный параметр сортировки (требуется year/likes)");
+        }
+        final List<Film> films = jdbcTemplate.query(sql, filmRowMapper, directorId);
+        final List<Integer> idList = films.stream().map(Film::getId).collect(toUnmodifiableList());
+        setFilmGenres(films, getFilmGenres(idList));
+        setFilmDirectors(films, getFilmDirectors(idList)); //на случай, если режиссеров несколько
+        return films;
     }
 
     private void checkFilmExists(int filmId) {
@@ -346,10 +367,12 @@ public class FilmDbStorage implements FilmStorage {
 
     private void checkGenresExists(final Film film) {
         if (nonNull(film.getGenres())) {
-            final List<Integer> genresListIds = film.getGenres().stream().map(Genre::getId).collect(toUnmodifiableList());
+            final List<Integer> genresListIds = film.getGenres().stream().map(Genre::getId)
+                    .collect(toUnmodifiableList());
             boolean genresNotExists = genreStorage.getGenreById(genresListIds).isEmpty();
             if (genresNotExists) {
-                throw new ValidationException(String.format("Не существует жанра/жанров с id из списка %s", genresListIds.stream().map(String::valueOf).collect(joining(", "))));
+                throw new ValidationException(String.format("Не существует жанра/жанров с id из списка %s",
+                        genresListIds.stream().map(String::valueOf).collect(joining(", "))));
             }
         }
     }

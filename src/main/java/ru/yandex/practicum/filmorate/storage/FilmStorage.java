@@ -24,5 +24,5 @@ public interface FilmStorage {
 
     List<Film> getPopular(Optional<Integer> count);
 
-    List<Film> getSortedFilmByDirector(String param, int director_id);
+    List<Film> getSortedFilmByDirector(String param, int directorId);
 }
