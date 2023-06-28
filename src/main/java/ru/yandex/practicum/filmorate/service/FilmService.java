@@ -57,7 +57,7 @@ public class FilmService {
 
     public List<Film> getPopularByGenresAndYear(Optional<Integer> count, Optional<Integer> genreId,
                                                 Optional<Integer> year) {
-       return filmStorage.getPopularByGenresAndYear(count, genreId, year);
+        return filmStorage.getPopularByGenresAndYear(count, genreId, year);
     }
 
     public void deleteFilmById(int filmId) {
@@ -89,5 +89,9 @@ public class FilmService {
 
     public List<Film> getSortedFilmByDirector(String param, int directorId) {
         return filmStorage.getSortedFilmByDirector(param, directorId);
+    }
+
+    public List<Film> search(String query, String by) {
+        return filmStorage.search(query, by);
     }
 }
