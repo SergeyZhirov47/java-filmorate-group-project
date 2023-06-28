@@ -28,4 +28,5 @@ public class Film {
     private Set<Genre> genres;
     @JsonProperty("mpa")
     private MPA rating;
+    private Set<Director> directors;
 }

@@ -62,9 +62,19 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public List<Film> getPopular(@RequestParam(name = "count") Optional<Integer> count) {
-        log.info(String.format("GET /films/popular?count={count}, {count} = %s", count.isPresent() ? count.get() : "не указан"));
-        return filmService.getPopular(count);
+    public List<Film> getPopular(@RequestParam(name = "count") Optional<Integer> count,
+                                  @RequestParam(value = "genreId", required = false) Optional<Integer> genreId,
+                                  @RequestParam(value = "year", required = false) Optional<Integer> year) {
+        log.info(String.format("GET /films/popular?count={count}&genreId={genreId}&year={year}, {count} = %s, " +
+                "{genreID} = %s, {year} = %s", count, genreId, year));
+        return filmService.getPopularByGenresAndYear(count, genreId, year);
+    }
+
+    @GetMapping("/director/{directorId}")
+    public List<Film> getSortedFilmByDyrector(@RequestParam(name = "sortBy") String param,
+            @PathVariable int directorId) {
+        log.info("Получен запрос на получение фильмов режиссера");
+        return filmService.getSortedFilmByDirector(param, directorId);
     }
 
     @DeleteMapping("/{id}")
