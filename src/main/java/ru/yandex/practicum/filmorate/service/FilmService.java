@@ -15,7 +15,6 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class FilmService {
-    protected final int defaultPopularLimit = 10;
 
     protected final FilmStorage filmStorage;
     protected final LikeStorage likeStorage;
@@ -55,14 +54,15 @@ public class FilmService {
         likeStorage.removeLike(filmId, userId);
     }
 
+
+    public List<Film> getPopularByGenresAndYear(Optional<Integer> count, Optional<Integer> genreId,
+                                                Optional<Integer> year) {
+       return filmStorage.getPopularByGenresAndYear(count, genreId, year);
+    }
+
     public void deleteFilmById(int filmId) {
         checkFilmExists(filmId);
         filmStorage.deleteById(filmId);
-    }
-
-    public List<Film> getPopular(final Optional<Integer> count) {
-        Optional<Integer> countOrDefault = count.or(() -> Optional.of(defaultPopularLimit));
-        return filmStorage.getPopular(countOrDefault);
     }
 
     private boolean isUserExists(int id) {

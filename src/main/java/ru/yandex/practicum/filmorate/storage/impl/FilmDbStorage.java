@@ -27,6 +27,7 @@ import ru.yandex.practicum.filmorate.storage.MPAStorage;
 import java.sql.Date;
 import java.sql.*;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.nonNull;
@@ -36,25 +37,25 @@ import static java.util.stream.Collectors.toUnmodifiableList;
 @Component
 @RequiredArgsConstructor
 public class FilmDbStorage implements FilmStorage {
-    private static final String SELECT_FILM =
-            "SELECT f.\"id\", f.\"name\", f.\"description\", f.\"release_date\", f.\"duration\", mr.\"id\" AS id_rating, mr.\"name\" AS name_rating\n"
-                    +
-                    "FROM \"films\" f\n" +
-                    "LEFT JOIN \"MPA_ratings\" mr ON mr.\"id\" = f.\"mpa_rating_id\"";
-    private static final String SELECT_FILM_AND_LIKES =
-            "SELECT f.\"id\", f.\"name\", f.\"description\", f.\"release_date\", f.\"duration\", " +
-                    "mr.\"id\" AS id_rating, mr.\"name\" AS name_rating, COUNT(l.\"id_user\") AS likesCount\n" +
-                    "FROM \"films\" f\n" +
-                    "LEFT JOIN \"MPA_ratings\" mr ON mr.\"id\" = f.\"mpa_rating_id\" \n" +
-                    "LEFT JOIN \"likes\" l ON l.\"id_film\" = f.\"id\" \n" +
-                    "GROUP BY f.\"id\" \n" +
-                    "ORDER BY likesCount DESC";
+
+    private static final String SELECT_FILM = "SELECT f.\"id\", f.\"name\", f.\"description\", f.\"release_date\", " +
+            "f.\"duration\", mr.\"id\" AS id_rating, mr.\"name\" AS name_rating\n" +
+            "FROM \"films\" f\n" +
+            "LEFT JOIN \"MPA_ratings\" mr ON mr.\"id\" = f.\"mpa_rating_id\"";
+    private static final String SELECT_FILM_AND_LIKES = "SELECT f.\"id\", f.\"name\", f.\"description\", " +
+            "f.\"release_date\", f.\"duration\", " +
+            "mr.\"id\" AS id_rating, mr.\"name\" AS name_rating, COUNT(l.\"id_user\") AS likesCount\n" +
+            "FROM \"films\" f\n" +
+            "LEFT JOIN \"MPA_ratings\" mr ON mr.\"id\" = f.\"mpa_rating_id\" \n" +
+            "LEFT JOIN \"likes\" l ON l.\"id_film\" = f.\"id\" \n" +
+            "GROUP BY f.\"id\" \n" +
+            "ORDER BY likesCount DESC";
     private static final String SELECT_FILM_BY_ID = SELECT_FILM + " WHERE f.\"id\" = ?";
-    private static final String SELECT_FILM_GENRES =
-            "SELECT f.\"id\" as id_film, g.\"id\" as id_genre, g.\"name\" as name_genre\n" +
-                    "FROM \"films\" f\n" +
-                    "LEFT JOIN \"film_genre\" fg ON fg.\"film_id\" = f.\"id\"\n" +
-                    "LEFT JOIN \"genres\" g ON g.\"id\" = fg.\"genre_id\"\n";
+    private static final String SELECT_FILM_GENRES = "SELECT f.\"id\" as id_film, g.\"id\" as id_genre, " +
+            "g.\"name\" as name_genre\n" +
+            "FROM \"films\" f\n" +
+            "LEFT JOIN \"film_genre\" fg ON fg.\"film_id\" = f.\"id\"\n" +
+            "LEFT JOIN \"genres\" g ON g.\"id\" = fg.\"genre_id\"\n";
     private static final String SELECT_FILM_DIRECTORS = "SELECT f.\"id\" as id_film, d.\"director_id\" as id_director, "
             + "d.\"name\" as name_director\n" +
             "FROM \"films\" f\n" +
@@ -104,12 +105,20 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
+    public List<Film> getAll() {
+        final List<Film> films = jdbcTemplate.query(SELECT_FILM + ";", filmRowMapper);
+        setFilmGenres(films, getFilmGenres());
+        setFilmDirectors(films, getFilmDirectors());
+
+        return films;
+    }
+
+    @Override
     public int add(final Film film) {
         checkRatingExists(film);
         checkGenresExists(film);
         checkDirectorExists(film);
-        final String insertFilmSql = "INSERT into \"films\" (name, description, release_date, duration, mpa_rating_id) "
-                +
+        final String insertFilmSql = "INSERT into \"films\" (name, description, release_date, duration, mpa_rating_id) " +
                 "VALUES (?, ?, ?, ?, ?)";
 
         final KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -178,15 +187,6 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getAll() {
-        final List<Film> films = jdbcTemplate.query(SELECT_FILM + ";", filmRowMapper);
-        setFilmGenres(films, getFilmGenres());
-        setFilmDirectors(films, getFilmDirectors());
-
-        return films;
-    }
-
-    @Override
     public boolean contains(int id) {
         final String sql = "SELECT EXISTS(SELECT f.id " +
                 "FROM \"films\" f " +
@@ -239,6 +239,25 @@ public class FilmDbStorage implements FilmStorage {
         setFilmGenres(films, getFilmGenres(idList));
         setFilmDirectors(films, getFilmDirectors(idList)); //на случай, если режиссеров несколько
         return films;
+    }
+
+    public List<Film> getPopularByGenresAndYear(Optional<Integer> count, Optional<Integer> genreId, Optional<Integer> year) {
+        List<Film> filmList = getPopular(count);
+        if (genreId.isPresent()) {
+            filmList = filmList.stream()
+                    .filter(film -> film.getGenres() != null)
+                    .filter(film -> film.getGenres().stream()
+                            .map(Genre::getId)
+                            .collect(Collectors.toList())
+                            .contains(genreId.get()))
+                    .collect(Collectors.toList());
+        }
+        if (year.isPresent()) {
+            filmList = filmList.stream()
+                    .filter(film -> film.getReleaseDate().getYear() == year.get())
+                    .collect(Collectors.toList());
+        }
+        return filmList;
     }
 
     private void checkFilmExists(int filmId) {
@@ -367,12 +386,10 @@ public class FilmDbStorage implements FilmStorage {
 
     private void checkGenresExists(final Film film) {
         if (nonNull(film.getGenres())) {
-            final List<Integer> genresListIds = film.getGenres().stream().map(Genre::getId)
-                    .collect(toUnmodifiableList());
+            final List<Integer> genresListIds = film.getGenres().stream().map(Genre::getId).collect(toUnmodifiableList());
             boolean genresNotExists = genreStorage.getGenreById(genresListIds).isEmpty();
             if (genresNotExists) {
-                throw new ValidationException(String.format("Не существует жанра/жанров с id из списка %s",
-                        genresListIds.stream().map(String::valueOf).collect(joining(", "))));
+                throw new ValidationException(String.format("Не существует жанра/жанров с id из списка %s", genresListIds.stream().map(String::valueOf).collect(joining(", "))));
             }
         }
     }
