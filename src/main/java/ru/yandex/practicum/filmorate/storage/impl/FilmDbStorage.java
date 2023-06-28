@@ -61,6 +61,7 @@ public class FilmDbStorage implements FilmStorage {
             "FROM \"films\" f\n" +
             "LEFT JOIN \"films_directors\" fd ON fd.\"film_id\" = f.\"id\"\n" +
             "LEFT JOIN \"directors\" d ON d.\"director_id\" = fd.\"director_id\"\n";
+
     protected final GenreStorage genreStorage;
     protected final MPAStorage mpaStorage;
     protected final DirectorStorage directorStorage;
@@ -215,13 +216,57 @@ public class FilmDbStorage implements FilmStorage {
                 + "RIGHT JOIN \"films_directors\" fd ON fd.\"film_id\" = f.\"id\" \n"
                 + "WHERE \"director_id\" = ?\n";
         switch (param) {
-            case ("year") :
+            case ("year"):
                 sql += "ORDER BY SELECT EXTRACT (YEAR FROM f.\"release_date\");";
                 break;
-            case ("likes") :
+            case ("likes"):
                 sql += "";
         }
         return null;
+    }
+
+    @Override
+    public List<Film> search(String query, String by) {
+        List<Film> films = new ArrayList<>(getPopular(Optional.of(getAll().size())));
+        List<Film> validatedFilms = new ArrayList<>();
+        switch (by) {
+            case ("title"):
+                for (Film film : films) {
+                    if (film.getName().toLowerCase().contains(query.toLowerCase())) {
+                        validatedFilms.add(film);
+                    }
+                }
+                break;
+            case ("director"):
+                for (Film film : films) {
+                    for (Director director : film.getDirectors()) {
+                        if (director.getName().toLowerCase().contains(query.toLowerCase())) {
+                            validatedFilms.add(film);
+                        }
+                    }
+                }
+                break;
+            default:
+                String[] splitBy = by.split(",");
+                if (splitBy.length == 2
+                        && (splitBy[0].equals("title")
+                        && splitBy[1].equals("director")
+                        || splitBy[1].equals("title")
+                        && splitBy[0].equals("director"))) {
+                    for (Film film : films) {
+                        if (film.getName().toLowerCase().contains(query.toLowerCase())) {
+                            validatedFilms.add(film);
+                        }
+                        for (Director director : film.getDirectors()) {
+                            if (director.getName().toLowerCase().contains(query.toLowerCase())) {
+                                validatedFilms.add(film);
+                            }
+                        }
+                    }
+                    break;
+                }
+        }
+        return validatedFilms;
     }
 
     public List<Film> getPopularByGenresAndYear(Optional<Integer> count, Optional<Integer> genreId, Optional<Integer> year) {
@@ -438,7 +483,7 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     private void setFilmDirectors(final List<Film> films,
-            final Map<Integer, Set<Director>> filmsDirectors) {
+                                  final Map<Integer, Set<Director>> filmsDirectors) {
         if (!films.isEmpty()) {
             films.forEach(f -> {
                 f.setDirectors(filmsDirectors.get(f.getId()));
