@@ -163,7 +163,8 @@ public class FilmDbStorage implements FilmStorage {
                 "WHERE id = ?";
 
         final Integer ratingId = isNull(film.getRating()) ? null : film.getRating().getId();
-        jdbcTemplate.update(updateFilmSql, film.getName(), film.getDescription(), film.getReleaseDate(), film.getDuration(), ratingId, filmId);
+        jdbcTemplate.update(updateFilmSql, film.getName(), film.getDescription(), film.getReleaseDate(),
+                film.getDuration(), ratingId, filmId);
 
         // обновляем жанры и режиссеров фильма (сначала удаляем все, потом записываем текущие).
         deleteFilmGenre(film.getId());
@@ -211,17 +212,33 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getSortedFilmByDirector(String param, int directorId) {
-        String sql = "SELECT f.\"id\", f.\"name\", f.\"description\" , f.\"release_date\" , f.\"duration\" , f.\"mpa_rating_id\"  FROM \"films\" f\n"
-                + "RIGHT JOIN \"films_directors\" fd ON fd.\"film_id\" = f.\"id\" \n"
-                + "WHERE \"director_id\" = ?\n";
-        switch (param) {
-            case ("year") :
-                sql += "ORDER BY SELECT EXTRACT (YEAR FROM f.\"release_date\");";
-                break;
-            case ("likes") :
-                sql += "";
+        if (directorStorage.getDirectorsByIds(List.of(directorId)).isEmpty()) {
+            throw new NotFoundException("Режиссера с данным ID не найдено");
         }
-        return null;
+        String sql =
+                "SELECT f.\"id\", f.\"name\", f.\"description\" , f.\"release_date\" , f.\"duration\" , "
+                        + "f.\"mpa_rating_id\" as id_rating, mr.\"name\" AS name_rating FROM \"films\" f\n"
+                        + "RIGHT JOIN \"films_directors\" fd ON fd.\"film_id\" = f.\"id\" \n"
+                        + "LEFT JOIN \"MPA_ratings\" mr ON mr.\"id\" = f.\"mpa_rating_id\" \n";
+        switch (param) {
+            case ("year"):
+                sql += "WHERE \"director_id\" = ?\n"
+                        + "ORDER BY SELECT EXTRACT (YEAR FROM f.\"release_date\");";
+                break;
+            case ("likes"):
+                sql += "LEFT JOIN \"likes\" l ON l.\"id_film\" = f.\"id\" \n"
+                        + "WHERE \"director_id\" = ?\n"
+                        + "GROUP BY f.\"id\" \n"
+                        + "ORDER BY COUNT(l.\"id_user\") DESC;";
+                break;
+            default:
+                throw new ValidationException("Указан неверный параметр сортировки (требуется year/likes)");
+        }
+        final List<Film> films = jdbcTemplate.query(sql, filmRowMapper, directorId);
+        final List<Integer> idList = films.stream().map(Film::getId).collect(toUnmodifiableList());
+        setFilmGenres(films, getFilmGenres(idList));
+        setFilmDirectors(films, getFilmDirectors(idList)); //на случай, если режиссеров несколько
+        return films;
     }
 
     public List<Film> getPopularByGenresAndYear(Optional<Integer> count, Optional<Integer> genreId, Optional<Integer> year) {
