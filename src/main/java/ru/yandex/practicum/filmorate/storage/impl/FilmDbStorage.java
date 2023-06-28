@@ -227,12 +227,13 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> search(String query, String by) {
-        List<Film> films = new ArrayList<>(getPopular(Optional.of(getAll().size())));
-        List<Film> validatedFilms = new ArrayList<>();
+        final List<Film> films = new ArrayList<>(getPopular(Optional.empty()));
+        final List<Film> validatedFilms = new ArrayList<>();
+        final String lowerCaseQuery = query.toLowerCase();
         switch (by) {
             case ("title"):
                 for (Film film : films) {
-                    if (film.getName().toLowerCase().contains(query.toLowerCase())) {
+                    if (film.getName().toLowerCase().contains(lowerCaseQuery)) {
                         validatedFilms.add(film);
                     }
                 }
@@ -240,25 +241,25 @@ public class FilmDbStorage implements FilmStorage {
             case ("director"):
                 for (Film film : films) {
                     for (Director director : film.getDirectors()) {
-                        if (director.getName().toLowerCase().contains(query.toLowerCase())) {
+                        if (director.getName().toLowerCase().contains(lowerCaseQuery)) {
                             validatedFilms.add(film);
                         }
                     }
                 }
                 break;
             default:
-                String[] splitBy = by.split(",");
+                final String[] splitBy = by.split(",");
                 if (splitBy.length == 2
                         && (splitBy[0].equals("title")
                         && splitBy[1].equals("director")
                         || splitBy[1].equals("title")
                         && splitBy[0].equals("director"))) {
                     for (Film film : films) {
-                        if (film.getName().toLowerCase().contains(query.toLowerCase())) {
+                        if (film.getName().toLowerCase().contains(lowerCaseQuery)) {
                             validatedFilms.add(film);
                         }
                         for (Director director : film.getDirectors()) {
-                            if (director.getName().toLowerCase().contains(query.toLowerCase())) {
+                            if (director.getName().toLowerCase().contains(lowerCaseQuery)) {
                                 validatedFilms.add(film);
                             }
                         }
