@@ -82,4 +82,9 @@ public class FilmController {
         log.info(String.format("DELETE /films/{id}, {id} = %s", id));
         filmService.deleteFilmById(id);
     }
+
+    @GetMapping("/search")
+    public List<Film> search(@RequestParam String query, @RequestParam String by) {
+        return filmService.search(query, by);
+    }
 }
