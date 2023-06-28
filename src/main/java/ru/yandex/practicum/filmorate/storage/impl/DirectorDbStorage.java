@@ -11,19 +11,21 @@ import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.common.mappers.DirectorRowMapper;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.DirectorStorage;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
 public class DirectorDbStorage implements DirectorStorage {
     private static final String SELECT_DIRECTOR = "SELECT * FROM directors";
     private final JdbcTemplate jdbcTemplate;
-    private SimpleJdbcInsert simpleJdbcInsert;
     private final NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private final DirectorRowMapper directorRowMapper = new DirectorRowMapper();
+    private SimpleJdbcInsert simpleJdbcInsert;
 
     @Override
     public List<Director> getAllDirectors() {
@@ -68,17 +70,6 @@ public class DirectorDbStorage implements DirectorStorage {
         }
     }
 
-    private Director getDirector(SqlRowSet directorRow) {
-        return new Director(directorRow.getInt("director_id"),
-                directorRow.getString("name"));
-    }
-
-    private Map<String, Object> directorToMap(Director director) {
-        final Map<String, Object> values = new HashMap<>();
-        values.put("name", director.getName());
-        return values;
-    }
-
     @Override
     public List<Director> getDirectorsByIds(final List<Integer> idList) {
         if (idList.isEmpty()) {
@@ -89,5 +80,16 @@ public class DirectorDbStorage implements DirectorStorage {
         final SqlParameterSource parameters = new MapSqlParameterSource("ids", idList);
 
         return namedParameterJdbcTemplate.query(sql, parameters, directorRowMapper);
+    }
+
+    private Director getDirector(SqlRowSet directorRow) {
+        return new Director(directorRow.getInt("director_id"),
+                directorRow.getString("name"));
+    }
+
+    private Map<String, Object> directorToMap(Director director) {
+        final Map<String, Object> values = new HashMap<>();
+        values.put("name", director.getName());
+        return values;
     }
 }
