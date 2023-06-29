@@ -8,7 +8,6 @@ import ru.yandex.practicum.filmorate.common.mappers.EventRowMapper;
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.storage.EventStorage;
 
-import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.util.List;
 
@@ -57,16 +56,5 @@ public class EventDbStorage implements EventStorage {
                         .build();
 
         return addEvent(event);
-    }
-
-
-    public void deleteEventReview(int reviewId) {
-        String sql = "DELETE FROM \"events\" WHERE \"entity_id\" = ? AND \"event_type\" = ?";
-
-        jdbcTemplate.update(sql, reviewId, "REVIEW");
-    }
-
-    public void deleteEventUser(int userId) {
-        String sql = "";
     }
 }

@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.common.mappers;
 
 import org.springframework.jdbc.core.RowMapper;
-import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Event;
 
 import java.sql.ResultSet;
