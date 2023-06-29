@@ -38,7 +38,9 @@ public class ReviewService {
         checkReviewExists(review.getId());
         reviewStorage.update(review);
 
-        eventStorage.addEvent(review.getUserId(), review.getId(), "REVIEW", "UPDATE");
+        Review reviewNew = reviewStorage.get(review.getId()).get();
+
+        eventStorage.addEvent(reviewNew.getUserId(), reviewNew.getId(), "REVIEW", "UPDATE");
     }
 
     public List<Review> getByFilmId(Optional<Integer> filmId, Optional<Integer> count) {
@@ -48,10 +50,12 @@ public class ReviewService {
 
     public void deleteById(int id) {
         checkReviewExists(id);
-        reviewStorage.deleteById(id);
 
         Review review = reviewStorage.get(id).get();
-        eventStorage.addEvent(review.getUserId(), review.getId(), "REVIEW", "DELETE");
+
+        reviewStorage.deleteById(id);
+
+        eventStorage.addEvent(review.getUserId(), review.getId(), "REVIEW", "REMOVE");
     }
 
     public Review getById(int id) {
@@ -66,8 +70,6 @@ public class ReviewService {
 
     public void addLike(int reviewId, int userId) {
         reviewLikeStorage.addLike(reviewId, userId);
-
-        eventStorage.addEvent(userId, reviewId, "LIKE", "ADD");
     }
 
     public void addDislike(int reviewId, int userId) {
@@ -76,8 +78,6 @@ public class ReviewService {
 
     public void deleteLike(int reviewId, int userId) {
         reviewLikeStorage.deleteLike(reviewId, userId);
-
-        eventStorage.addEvent(userId, reviewId, "LIKE", "REMOVE");
     }
 
     public void deleteDislike(int reviewId, int userId) {

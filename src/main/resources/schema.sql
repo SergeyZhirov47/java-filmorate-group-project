@@ -1,17 +1,18 @@
 DROP TABLE IF EXISTS "film_genre";
 DROP TABLE IF EXISTS "likes";
 DROP TABLE IF EXISTS "friendship";
+DROP TABLE IF EXISTS films_directors;
 DROP TABLE IF EXISTS "films_directors";
-
+DROP TABLE IF EXISTS directors;
+DROP TABLE IF EXISTS "directors";
 DROP TABLE IF EXISTS "reviews_likes";
 DROP TABLE IF EXISTS "reviews";
-
+DROP TABLE IF EXISTS films;
 DROP TABLE IF EXISTS "films";
+DROP TABLE IF EXISTS "events";
 DROP TABLE IF EXISTS "users";
-
 DROP TABLE IF EXISTS "genres";
 DROP TABLE IF EXISTS "MPA_ratings";
-DROP TABLE IF EXISTS "directors";
 
 -- Если нужно, чтобы данные сохранялись, то необходимо закомментировать секцию с DROP TABLE.
 
@@ -51,7 +52,7 @@ create TABLE IF NOT EXISTS films_directors
     film_id bigint NOT NULL,
     director_id integer NOT NULL,
     CONSTRAINT films_directors_pk PRIMARY KEY (film_id, director_id),
-    CONSTRAINT films_directors_fk1 FOREIGN KEY (film_id) REFERENCES films (id) ON delete CASCADE,
+    CONSTRAINT films_directors_fk1 FOREIGN KEY (film_id) REFERENCES "films" ("id") ON delete CASCADE,
     CONSTRAINT films_directors_fk2 FOREIGN KEY (director_id) REFERENCES directors (director_id) ON delete CASCADE
 );
 

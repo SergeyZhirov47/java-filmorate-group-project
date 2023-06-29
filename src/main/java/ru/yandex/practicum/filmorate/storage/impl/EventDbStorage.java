@@ -6,7 +6,6 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.common.mappers.EventRowMapper;
 import ru.yandex.practicum.filmorate.model.Event;
-import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.EventStorage;
 
 import java.sql.Date;
@@ -19,9 +18,9 @@ public class EventDbStorage implements EventStorage {
     private final JdbcTemplate jdbcTemplate;
 
     public List<Event> getEventsByUserId(int id) {
-        String sql = "SELECT id, last_update, id_user, event_type, operation, entity_id\n" +
-                     "  FROM event\n" +
-                     " WHERE id_user = ?";
+        String sql = "SELECT \"id\", \"last_update\", \"id_user\", \"event_type\", \"operation\", \"entity_id\"\n" +
+                     "  FROM \"events\"\n" +
+                     " WHERE \"id_user\" = ?";
 
         List<Event> events = jdbcTemplate.query(sql, new EventRowMapper(), id);
 
@@ -29,13 +28,13 @@ public class EventDbStorage implements EventStorage {
     }
 
     public Event addEvent(Event event) {
-        String sql = "INSERT INTO event (id_user, event_type, operation, entity_id, last_update) " +
+        String sql = "INSERT INTO \"events\" (\"id_user\", \"event_type\", \"operation\", \"entity_id\", \"last_update\") " +
                 "VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP())";
 
         GeneratedKeyHolder keyHolder = new GeneratedKeyHolder();
 
         jdbcTemplate.update(connection -> {
-            PreparedStatement stmt = connection.prepareStatement(sql, new String[]{"user_id"});
+            PreparedStatement stmt = connection.prepareStatement(sql, new String[]{"id"});
             stmt.setInt(1, event.getUserId());
             stmt.setString(2, event.getEventType());
             stmt.setString(3, event.getOperation());
@@ -58,5 +57,16 @@ public class EventDbStorage implements EventStorage {
                         .build();
 
         return addEvent(event);
+    }
+
+
+    public void deleteEventReview(int reviewId) {
+        String sql = "DELETE FROM \"events\" WHERE \"entity_id\" = ? AND \"event_type\" = ?";
+
+        jdbcTemplate.update(sql, reviewId, "REVIEW");
+    }
+
+    public void deleteEventUser(int userId) {
+        String sql = "";
     }
 }
