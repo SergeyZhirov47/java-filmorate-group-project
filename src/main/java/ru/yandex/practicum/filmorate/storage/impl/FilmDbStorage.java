@@ -289,35 +289,29 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> getCommonFilms(int userId, int friendId) {
-        SqlRowSet rowSet = jdbcTemplate.queryForRowSet(
+        final SqlRowSet rowSet = jdbcTemplate.queryForRowSet(
             "SELECT F.\"id\" AS film_id, F.\"name\" AS film_name,\n" +
                 "       F.\"description\" AS film_des, F.\"duration\" AS film_dur,\n" +
                 "       F.\"release_date\" AS film_rd,\n" +
                 "       M.\"id\" AS mpa_id, M.\"name\" AS mpa_name,\n" +
-                "       G2.\"id\" AS genre_id, G2.\"name\" AS genre_name, COUNT(L.\"id\") AS like_count " +
+                "       COUNT(L.\"id\") AS like_count " +
                 "FROM \"films\" AS F " +
                 "LEFT JOIN \"likes\" AS L ON F.\"id\" = L.\"id_film\" " +
                 "LEFT JOIN \"users\" AS u1 ON L.\"id_user\" = u1.\"id\" " +
                 "LEFT JOIN \"likes\" AS l2 ON L.\"id_film\" = l2.\"id_film\" " +
                 "LEFT JOIN \"users\" AS u2 ON l2.\"id_user\" = u2.\"id\" " +
                 "LEFT JOIN \"likes\" AS l3 ON F.\"id\" = l3.\"id_film\" " +
-                "LEFT JOIN \"film_genre\" AS FG on F.\"id\" = FG.\"film_id\" " +
-                "LEFT JOIN \"genres\" AS G2 on G2.\"id\" = FG.\"genre_id\" " +
                 "JOIN \"MPA_ratings\" AS M on M.\"id\" = F.\"mpa_rating_id\" " +
                 "WHERE u1.\"id\" = ? AND u2.\"id\" = ? " +
                 "GROUP BY F.\"id\", L.\"id\", l3.\"id\" " +
                 "ORDER BY like_count DESC ", userId, friendId);
-        return rowSetMapper(rowSet);
-    }
 
-    private List<Film> rowSetMapper(SqlRowSet rowSet) {
-        List<Film> films = new ArrayList<>();
-        Set<Film> filmSet = new HashSet<>();
+        final Set<Film> filmSet = new HashSet<>();
 
         while (rowSet.next()) {
-            int filmId = rowSet.getInt("film_id");
-            Film film = Film.builder().build();
-            MPA mpa = MPA.builder()
+            final int filmId = rowSet.getInt("film_id");
+            final Film film = Film.builder().build();
+            final MPA mpa = MPA.builder()
                     .id(rowSet.getInt("mpa_id"))
                     .name(rowSet.getString("mpa_name"))
                     .build();
@@ -329,7 +323,7 @@ public class FilmDbStorage implements FilmStorage {
             film.setRating(mpa);
             filmSet.add(film);
         }
-        films.addAll(filmSet);
+        final List<Film> films = new ArrayList<>(filmSet);
         setFilmGenres(films, getFilmGenres());
         setFilmDirectors(films, getFilmDirectors());
         return films;
