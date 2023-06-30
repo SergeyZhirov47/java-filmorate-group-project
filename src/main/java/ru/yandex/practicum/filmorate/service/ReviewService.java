@@ -5,10 +5,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.common.ErrorMessageUtil;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.ReviewLikeStorage;
-import ru.yandex.practicum.filmorate.storage.ReviewStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.storage.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -24,16 +21,26 @@ public class ReviewService {
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
 
+    private final EventStorage eventStorage;
+
     public int add(final Review review) {
         checkUserExists(review.getUserId());
         checkFilmExists(review.getFilmId());
 
-        return reviewStorage.add(review);
+        int reviewId = reviewStorage.add(review);
+
+        eventStorage.addEvent(review.getUserId(), reviewId, "REVIEW", "ADD");
+
+        return reviewId;
     }
 
     public void update(final Review review) {
         checkReviewExists(review.getId());
         reviewStorage.update(review);
+
+        Review reviewNew = reviewStorage.get(review.getId()).get();
+
+        eventStorage.addEvent(reviewNew.getUserId(), reviewNew.getId(), "REVIEW", "UPDATE");
     }
 
     public List<Review> getByFilmId(Optional<Integer> filmId, Optional<Integer> count) {
@@ -43,7 +50,12 @@ public class ReviewService {
 
     public void deleteById(int id) {
         checkReviewExists(id);
+
+        Review review = reviewStorage.get(id).get();
+
         reviewStorage.deleteById(id);
+
+        eventStorage.addEvent(review.getUserId(), review.getId(), "REVIEW", "REMOVE");
     }
 
     public Review getById(int id) {
