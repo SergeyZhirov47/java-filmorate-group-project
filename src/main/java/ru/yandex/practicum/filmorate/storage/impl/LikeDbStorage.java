@@ -16,6 +16,10 @@ public class LikeDbStorage implements LikeStorage {
 
     @Override
     public void addLike(int filmId, int userId) {
+        if (contains(filmId, userId)) {
+            return;
+        }
+
         final String sql = "INSERT INTO \"likes\"\n" +
                 "(\"id_film\", \"id_user\")\n" +
                 "VALUES(? , ?);";
@@ -29,6 +33,14 @@ public class LikeDbStorage implements LikeStorage {
                 "WHERE id_film = ? AND id_user = ?;";
 
         jdbcTemplate.update(sql, filmId, userId);
+    }
+
+    private boolean contains(int filmId, int userId) {
+        final String sql = "SELECT EXISTS(SELECT id " +
+                "FROM \"likes\" " +
+                "WHERE id_film = ? AND id_user = ?);";
+        return jdbcTemplate.queryForObject(sql, Boolean.class, filmId, userId);
+
     }
 
     @Override
