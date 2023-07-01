@@ -13,8 +13,6 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class ReviewService {
-    protected final int defaultReviewsLimit = 10;
-
     protected final ReviewStorage reviewStorage;
     protected final ReviewLikeStorage reviewLikeStorage;
 
@@ -43,9 +41,8 @@ public class ReviewService {
         eventStorage.addEvent(reviewNew.getUserId(), reviewNew.getId(), "REVIEW", "UPDATE");
     }
 
-    public List<Review> getByFilmId(Optional<Integer> filmId, Optional<Integer> count) {
-        final Optional<Integer> finalCount = Optional.of(count.orElse(defaultReviewsLimit));
-        return reviewStorage.getByFilmId(filmId, finalCount);
+    public List<Review> getByFilmId(Integer filmId, Integer count) {
+        return reviewStorage.getByFilmId(filmId, count);
     }
 
     public void deleteById(int id) {
