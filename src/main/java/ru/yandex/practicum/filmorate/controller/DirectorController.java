@@ -18,34 +18,32 @@ public class DirectorController {
 
     @GetMapping
     public List<Director> getAllDirectors() {
-        log.info("Получен запрос на получение списка всех режиссеров");
+        log.info("GET /directors");
         return directorService.getAllDirectors();
     }
 
     @GetMapping("/{id}")
     public Director getDirectorById(@PathVariable int id) {
-        log.info("Получен запрос на получение режиссера по ID");
+        log.info(String.format("GET /directors/{id}, {id} = %s", id));
         return directorService.getDirectorById(id);
     }
 
     @PostMapping
     public Director createDirector(@Valid @RequestBody Director director) {
-        log.info("Получен запрос на добавление режиссера");
+        log.info("POST /directors");
         return directorService.createDirector(director);
     }
 
     @PutMapping
     public Director updateDirector(@Valid @RequestBody Director director) {
-        log.info("Получен запрос на обновление режиссера");
+        log.info("PUT /directors");
         return directorService.update(director);
     }
 
     @DeleteMapping("/{id}")
     public void deleteDirector(@PathVariable int id) {
-        log.info("Получен запрос на удаление режиссера");
+        log.info(String.format("DELETE /directors/{id}, {id} = %s", id));
         directorService.removeDirector(id);
-        log.info("Режиссер удален");
+        log.info(String.format("Режиссер с id = {id} удален, {id} = %s", id));
     }
-
-
 }
