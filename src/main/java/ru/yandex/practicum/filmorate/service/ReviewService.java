@@ -5,10 +5,9 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.common.ErrorMessageUtil;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
-import ru.yandex.practicum.filmorate.storage.FilmStorage;
-import ru.yandex.practicum.filmorate.storage.ReviewLikeStorage;
-import ru.yandex.practicum.filmorate.storage.ReviewStorage;
-import ru.yandex.practicum.filmorate.storage.UserStorage;
+import ru.yandex.practicum.filmorate.model.enums.EventType;
+import ru.yandex.practicum.filmorate.model.enums.Operation;
+import ru.yandex.practicum.filmorate.storage.*;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,34 +15,46 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class ReviewService {
-    protected final int defaultReviewsLimit = 10;
-
     protected final ReviewStorage reviewStorage;
     protected final ReviewLikeStorage reviewLikeStorage;
 
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
 
+    private final EventStorage eventStorage;
+
     public int add(final Review review) {
         checkUserExists(review.getUserId());
         checkFilmExists(review.getFilmId());
 
-        return reviewStorage.add(review);
+        int reviewId = reviewStorage.add(review);
+
+        eventStorage.addEvent(review.getUserId(), reviewId, EventType.REVIEW, Operation.ADD);
+
+        return reviewId;
     }
 
     public void update(final Review review) {
         checkReviewExists(review.getId());
         reviewStorage.update(review);
+
+        Review reviewNew = reviewStorage.get(review.getId()).get();
+
+        eventStorage.addEvent(reviewNew.getUserId(), reviewNew.getId(), EventType.REVIEW, Operation.UPDATE);
     }
 
-    public List<Review> getByFilmId(Optional<Integer> filmId, Optional<Integer> count) {
-        final Optional<Integer> finalCount = Optional.of(count.orElse(defaultReviewsLimit));
-        return reviewStorage.getByFilmId(filmId, finalCount);
+    public List<Review> getByFilmId(Integer filmId, Integer count) {
+        return reviewStorage.getByFilmId(filmId, count);
     }
 
     public void deleteById(int id) {
         checkReviewExists(id);
+
+        Review review = reviewStorage.get(id).get();
+
         reviewStorage.deleteById(id);
+
+        eventStorage.addEvent(review.getUserId(), review.getId(), EventType.REVIEW, Operation.REMOVE);
     }
 
     public Review getById(int id) {

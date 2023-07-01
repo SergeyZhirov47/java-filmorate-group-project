@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.controller.parameters.FilmSortParameters;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
@@ -70,15 +71,34 @@ public class FilmController {
     }
 
     @GetMapping("/director/{directorId}")
-    public List<Film> getSortedFilmByDyrector(@RequestParam(name = "sortBy") String param,
+    public List<Film> getSortedFilmByDirector(@RequestParam(name = "sortBy") FilmSortParameters param,
             @PathVariable int directorId) {
-        log.info("Получен запрос на получение фильмов режиссера.");
-        return filmService.getSortedFilmByDirector(param, directorId);
+        log.info(String.format("GET /films/director/directorId={directorId}?sortBy={param}, "
+                + "{directorId} = %s, {param} = %s", directorId, param));
+        List<Film> films = filmService.getSortedFilmByDirector(param, directorId);
+        log.info(String.format("Список фильмов режиссера с id = {id}, отсортированных по параметру = {param} получен, "
+                + "{id} = %d, {param} = %s", directorId, param));
+        return films;
     }
 
     @DeleteMapping("/{id}")
     public void deleteFilmById(@PathVariable(name = "id") int id) {
         log.info(String.format("DELETE /films/{id}, {id} = %s", id));
         filmService.deleteFilmById(id);
+    }
+
+    @GetMapping("/search")
+    public List<Film> search(@RequestParam String query, @RequestParam String by) {
+        log.info(String.format("GET /films/search?query={query}&by={by}, {query} = %s " + "{by} = %s", query, by));
+        List<Film> films = filmService.search(query, by);
+        log.info(String.format("Результаты поиска по \"%s\" получены", query));
+        return films;
+    }
+
+    @GetMapping("/common")
+    public List<Film> getCommonFilms(@RequestParam(name = "userId") int userId,
+            @RequestParam(name = "friendId") int friendId) {
+        log.info("Поступил запрос на получение списка общих фильмов пользователя с id {} и {}", userId, friendId);
+        return filmService.getCommonFilms(userId, friendId);
     }
 }

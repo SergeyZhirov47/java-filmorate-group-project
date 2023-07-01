@@ -10,7 +10,3 @@ INSERT INTO "MPA_ratings" ("id", "name") VALUES (2, 'PG');-- ON CONFLICT DO NOTH
 INSERT INTO "MPA_ratings" ("id", "name") VALUES (3, 'PG-13');-- ON CONFLICT DO NOTHING;
 INSERT INTO "MPA_ratings" ("id", "name") VALUES (4, 'R');-- ON CONFLICT DO NOTHING;
 INSERT INTO "MPA_ratings" ("id", "name") VALUES (5, 'NC-17');-- ON CONFLICT DO NOTHING;
-
-/*
-
-*/
