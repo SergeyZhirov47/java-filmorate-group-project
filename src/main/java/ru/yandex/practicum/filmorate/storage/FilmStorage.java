@@ -23,9 +23,9 @@ public interface FilmStorage {
 
     boolean contains(int id);
 
-    List<Film> getPopular(Optional<Integer> count);
+    List<Film> getPopular(Integer count);
 
-    List<Film> getPopularByGenresAndYear(Optional<Integer> count, Optional<Integer> genreId, Optional<Integer> year);
+    List<Film> getPopularByGenresAndYear(Integer count, Integer genreId, Integer year);
 
     List<Film> getSortedFilmByDirector(FilmSortParameters param, int directorId);
 
