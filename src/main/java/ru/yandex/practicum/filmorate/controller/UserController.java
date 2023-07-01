@@ -54,18 +54,21 @@ public class UserController {
     public void deleteUserById(@PathVariable(name = "id") int id) {
         log.info(String.format("DELETE /users/{id}, {id} = %s", id));
         userService.deleteById(id);
+        log.info(String.format("Пользователь с id = %s успешно удален", id));
     }
 
     @PutMapping("/{id}/friends/{friendId}")
     public void addFriend(@PathVariable(name = "id") int id, @PathVariable(name = "friendId") int friendId) {
         log.info(String.format("PUT /users/{id}/friends/{friendId}, {id} = %s, {friendId} = %s", id, friendId));
         userService.addFriend(id, friendId);
+        log.info(String.format("Пользователь с id = %s успешно добавил в друзья пользователя с id = %s", id, friendId));
     }
 
     @DeleteMapping("/{id}/friends/{friendId}")
     public void deleteFriend(@PathVariable(name = "id") int id, @PathVariable(name = "friendId") int friendId) {
         log.info(String.format("DELETE /users/{id}/friends/{friendId}, {id} = %s, {friendId} = %s", id, friendId));
         userService.deleteFriend(id, friendId);
+        log.info(String.format("Пользователь с id = %s успешно удалил из друзей пользователя с id = %s", id, friendId));
     }
 
     @GetMapping("/{id}/friends")

@@ -53,12 +53,14 @@ public class FilmController {
     public void addLike(@PathVariable(name = "id") int id, @PathVariable(name = "userId") int userId) {
         log.info(String.format("PUT /films/{id}/like/{userId}, {id} = %s, {userId} = %s", id, userId));
         filmService.addLike(id, userId);
+        log.info(String.format("Пользователь с id = %s поставил лайк фильму с id = %s", userId, id));
     }
 
     @DeleteMapping("/{id}/like/{userId}")
     public void deleteLike(@PathVariable(name = "id") int id, @PathVariable(name = "userId") int userId) {
         log.info(String.format("DELETE /films/{id}/like/{userId}, {id} = %s, {userId} = %s", id, userId));
         filmService.deleteLike(id, userId);
+        log.info(String.format("Пользователь с id = %s удалил свой лайк фильму с id = %s", userId, id));
     }
 
     @GetMapping("/popular")
@@ -72,7 +74,7 @@ public class FilmController {
 
     @GetMapping("/director/{directorId}")
     public List<Film> getSortedFilmByDirector(@RequestParam(name = "sortBy") FilmSortParameters param,
-            @PathVariable int directorId) {
+                                              @PathVariable int directorId) {
         log.info(String.format("GET /films/director/directorId={directorId}?sortBy={param}, "
                 + "{directorId} = %s, {param} = %s", directorId, param));
         List<Film> films = filmService.getSortedFilmByDirector(param, directorId);
@@ -85,6 +87,7 @@ public class FilmController {
     public void deleteFilmById(@PathVariable(name = "id") int id) {
         log.info(String.format("DELETE /films/{id}, {id} = %s", id));
         filmService.deleteFilmById(id);
+        log.info(String.format("Фильм с id = %s успешно удален", id));
     }
 
     @GetMapping("/search")
@@ -97,7 +100,7 @@ public class FilmController {
 
     @GetMapping("/common")
     public List<Film> getCommonFilms(@RequestParam(name = "userId") int userId,
-            @RequestParam(name = "friendId") int friendId) {
+                                     @RequestParam(name = "friendId") int friendId) {
         log.info("Поступил запрос на получение списка общих фильмов пользователя с id {} и {}", userId, friendId);
         return filmService.getCommonFilms(userId, friendId);
     }
