@@ -11,6 +11,8 @@ import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
 
+import static java.util.Objects.nonNull;
+
 @Slf4j
 @RestController
 @RequestMapping("/reviews")
