@@ -55,8 +55,8 @@ public class FilmService {
     }
 
 
-    public List<Film> getPopularByGenresAndYear(Optional<Integer> count, Optional<Integer> genreId,
-                                                Optional<Integer> year) {
+    public List<Film> getPopularByGenresAndYear(Integer count, Integer genreId,
+                                                Integer year) {
        return filmStorage.getPopularByGenresAndYear(count, genreId, year);
     }
 

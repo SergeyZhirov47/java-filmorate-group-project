@@ -195,11 +195,11 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getPopular(Optional<Integer> count) {
+    public List<Film> getPopular(Integer count) {
         String selectPopular = SELECT_FILM_AND_LIKES;
 
-        if (count.isPresent()) {
-            selectPopular += " LIMIT " + count.get();
+        if (count != null) {
+            selectPopular += " LIMIT " + count;
         }
 
         final List<Film> films = jdbcTemplate.query(selectPopular + ";", filmRowMapper);
@@ -224,20 +224,20 @@ public class FilmDbStorage implements FilmStorage {
         return null;
     }
 
-    public List<Film> getPopularByGenresAndYear(Optional<Integer> count, Optional<Integer> genreId, Optional<Integer> year) {
+    public List<Film> getPopularByGenresAndYear(Integer count, Integer genreId, Integer year) {
         List<Film> filmList = getPopular(count);
-        if (genreId.isPresent()) {
+        if (genreId != null) {
             filmList = filmList.stream()
                     .filter(film -> film.getGenres() != null)
                     .filter(film -> film.getGenres().stream()
                             .map(Genre::getId)
                             .collect(Collectors.toList())
-                            .contains(genreId.get()))
+                            .contains(genreId))
                     .collect(Collectors.toList());
         }
-        if (year.isPresent()) {
+        if (year != null) {
             filmList = filmList.stream()
-                    .filter(film -> film.getReleaseDate().getYear() == year.get())
+                    .filter(film -> film.getReleaseDate().getYear() == year)
                     .collect(Collectors.toList());
         }
         return filmList;
