@@ -12,7 +12,7 @@ public interface ReviewStorage {
 
     void update(Review review);
 
-    List<Review> getByFilmId(Optional<Integer> filmId, Optional<Integer> count);
+    List<Review> getByFilmId(Integer filmId, Integer count);
 
     void deleteById(int id);
 

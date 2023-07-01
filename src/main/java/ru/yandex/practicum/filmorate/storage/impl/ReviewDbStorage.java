@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
+import static java.util.Objects.nonNull;
+
 @Component
 @RequiredArgsConstructor
 public class ReviewDbStorage implements ReviewStorage {
@@ -52,19 +54,19 @@ public class ReviewDbStorage implements ReviewStorage {
     }
 
     @Override
-    public List<Review> getByFilmId(Optional<Integer> filmId, Optional<Integer> count) {
+    public List<Review> getByFilmId(Integer filmId, Integer count) {
         final MapSqlParameterSource parameters = new MapSqlParameterSource();
 
         final StringBuilder sqlStrBuilder = new StringBuilder(SELECT_REVIEW_BASE);
-        if (filmId.isPresent()) {
+        if (nonNull(filmId)) {
             sqlStrBuilder.append(" WHERE r.id_film = :filmId ");
-            parameters.addValue("filmId", filmId.get());
+            parameters.addValue("filmId", filmId);
 
         }
         sqlStrBuilder.append(ORDER_PART);
-        if (count.isPresent()) {
+        if (nonNull(count)) {
             sqlStrBuilder.append(" LIMIT :limitValue ");
-            parameters.addValue("limitValue", count.get());
+            parameters.addValue("limitValue", count);
         }
         sqlStrBuilder.append(";");
 
