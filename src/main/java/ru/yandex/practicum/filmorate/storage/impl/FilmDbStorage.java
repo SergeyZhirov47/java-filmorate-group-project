@@ -214,7 +214,7 @@ public class FilmDbStorage implements FilmStorage {
         return films;
     }
 
-    public List<Film> getPopularByGenresAndYear(Integer count, Integer genreId, Integer year) {  
+    public List<Film> getPopularByGenresAndYear(Integer count, Integer genreId, Integer year) {
         List<Film> filmList = getPopular(count);
         if (genreId != null) {
             filmList = filmList.stream()
