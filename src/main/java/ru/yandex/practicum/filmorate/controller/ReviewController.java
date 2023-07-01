@@ -56,9 +56,9 @@ public class ReviewController {
 
     //  Получение всех отзывов по идентификатору фильма, если фильм не указан то все. Если кол-во не указано, то 10.
     @GetMapping
-    public List<Review> getReviewsByFilm(@RequestParam(name = "filmId") Optional<Integer> filmId, @RequestParam(name = "count") Optional<Integer> count) {
-        log.info(String.format("GET /reviews?filmId={filmId}&count={count}, {filmId} = %s, {count} = %s", filmId.isPresent() ? filmId.get() : "не указан", count.isPresent() ? count.get() : "не указан"));
-        return reviewService.getByFilmId(filmId, count);
+    public List<Review> getReviewsByFilm(@RequestParam(name = "filmId") Optional<Integer> filmId, @RequestParam(name = "count", defaultValue = "10") int count) {
+        log.info(String.format("GET /reviews?filmId={filmId}&count={count}, {filmId} = %s, {count} = %s", filmId.isPresent() ? filmId : "не указан", count));
+        return reviewService.getByFilmId(filmId.orElse(null), count);
     }
 
     // пользователь ставит лайк отзыву.
