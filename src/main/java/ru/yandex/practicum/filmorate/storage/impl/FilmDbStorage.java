@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.storage.impl;
 
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.EmptyResultDataAccessException;
@@ -615,5 +616,14 @@ public class FilmDbStorage implements FilmStorage {
 
         @Getter
         private final int columnIndex;
+    }
+
+    @AllArgsConstructor
+    private enum FilmSortParameter {
+        YEAR("year"),
+        LIKES("likes");
+
+        @Getter
+        private final String sortParameter;
     }
 }
