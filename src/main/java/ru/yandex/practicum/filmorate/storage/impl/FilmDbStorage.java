@@ -260,7 +260,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> search(String query, String by) {
-        final List<Film> films = new ArrayList<>(getPopular(null);
+        final List<Film> films = new ArrayList<>(getPopular(null));
         final List<Film> validatedFilms = new ArrayList<>();
         final String lowerCaseQuery = query.toLowerCase();
         switch (by) {
