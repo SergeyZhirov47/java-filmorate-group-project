@@ -3,8 +3,12 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.common.ErrorMessageUtil;
+import ru.yandex.practicum.filmorate.controller.parameters.FilmSortParameters;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.enums.EventType;
+import ru.yandex.practicum.filmorate.model.enums.Operation;
+import ru.yandex.practicum.filmorate.storage.EventStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.LikeStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -15,11 +19,11 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class FilmService {
-    protected final int defaultPopularLimit = 10;
 
     protected final FilmStorage filmStorage;
     protected final LikeStorage likeStorage;
     protected final UserStorage userStorage;
+    protected final EventStorage eventStorage;
 
     public int add(Film film) {
         final int filmId = filmStorage.add(film);
@@ -46,6 +50,8 @@ public class FilmService {
         checkUserExists(userId);
 
         likeStorage.addLike(filmId, userId);
+
+        eventStorage.addEvent(userId, filmId, EventType.LIKE, Operation.ADD);
     }
 
     public void deleteLike(int filmId, int userId) {
@@ -53,11 +59,19 @@ public class FilmService {
         checkUserExists(userId);
 
         likeStorage.removeLike(filmId, userId);
+
+        eventStorage.addEvent(userId, filmId, EventType.LIKE, Operation.REMOVE);
     }
 
-    public List<Film> getPopular(final Optional<Integer> count) {
-        Optional<Integer> countOrDefault = count.or(() -> Optional.of(defaultPopularLimit));
-        return filmStorage.getPopular(countOrDefault);
+
+    public List<Film> getPopularByGenresAndYear(Integer count, Integer genreId,
+                                                Integer year) {
+       return filmStorage.getPopularByGenresAndYear(count, genreId, year);
+    }
+
+    public void deleteFilmById(int filmId) {
+        checkFilmExists(filmId);
+        filmStorage.deleteById(filmId);
     }
 
     private boolean isUserExists(int id) {
@@ -80,5 +94,17 @@ public class FilmService {
 
     private void checkUserExists(int id) {
         checkExistsWithException(isUserExists(id), ErrorMessageUtil.getNoUserWithIdMessage(id));
+    }
+
+    public List<Film> getSortedFilmByDirector(FilmSortParameters param, int directorId) {
+        return filmStorage.getSortedFilmByDirector(param, directorId);
+    }
+
+    public List<Film> search(String query, String by) {
+        return filmStorage.search(query, by);
+    }
+
+    public List<Film> getCommonFilms(int userId, int friendId) {
+        return filmStorage.getCommonFilms(userId, friendId);
     }
 }
