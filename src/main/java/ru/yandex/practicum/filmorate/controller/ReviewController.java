@@ -9,7 +9,8 @@ import ru.yandex.practicum.filmorate.service.ReviewService;
 
 import javax.validation.Valid;
 import java.util.List;
-import java.util.Optional;
+
+import static java.util.Objects.nonNull;
 
 @Slf4j
 @RestController
@@ -56,9 +57,9 @@ public class ReviewController {
 
     //  Получение всех отзывов по идентификатору фильма, если фильм не указан то все. Если кол-во не указано, то 10.
     @GetMapping
-    public List<Review> getReviewsByFilm(@RequestParam(name = "filmId") Optional<Integer> filmId, @RequestParam(name = "count", defaultValue = "10") int count) {
-        log.info(String.format("GET /reviews?filmId={filmId}&count={count}, {filmId} = %s, {count} = %s", filmId.isPresent() ? filmId : "не указан", count));
-        return reviewService.getByFilmId(filmId.orElse(null), count);
+    public List<Review> getReviewsByFilm(@RequestParam(name = "filmId", required = false) Integer filmId, @RequestParam(name = "count", defaultValue = "10") int count) {
+        log.info(String.format("GET /reviews?filmId={filmId}&count={count}, {filmId} = %s, {count} = %s", nonNull(filmId) ? filmId : "не указан", count));
+        return reviewService.getByFilmId(filmId, count);
     }
 
     // пользователь ставит лайк отзыву.
