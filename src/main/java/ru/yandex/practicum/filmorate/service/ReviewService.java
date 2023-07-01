@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.common.ErrorMessageUtil;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.model.enums.EventType;
+import ru.yandex.practicum.filmorate.model.enums.Operation;
 import ru.yandex.practicum.filmorate.storage.*;
 
 import java.util.List;
@@ -29,7 +31,7 @@ public class ReviewService {
 
         int reviewId = reviewStorage.add(review);
 
-        eventStorage.addEvent(review.getUserId(), reviewId, "REVIEW", "ADD");
+        eventStorage.addEvent(review.getUserId(), reviewId, EventType.REVIEW, Operation.ADD);
 
         return reviewId;
     }
@@ -40,7 +42,7 @@ public class ReviewService {
 
         Review reviewNew = reviewStorage.get(review.getId()).get();
 
-        eventStorage.addEvent(reviewNew.getUserId(), reviewNew.getId(), "REVIEW", "UPDATE");
+        eventStorage.addEvent(reviewNew.getUserId(), reviewNew.getId(), EventType.REVIEW, Operation.UPDATE);
     }
 
     public List<Review> getByFilmId(Optional<Integer> filmId, Optional<Integer> count) {
@@ -55,7 +57,7 @@ public class ReviewService {
 
         reviewStorage.deleteById(id);
 
-        eventStorage.addEvent(review.getUserId(), review.getId(), "REVIEW", "REMOVE");
+        eventStorage.addEvent(review.getUserId(), review.getId(), EventType.REVIEW, Operation.REMOVE);
     }
 
     public Review getById(int id) {
