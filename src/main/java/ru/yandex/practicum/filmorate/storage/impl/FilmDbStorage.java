@@ -15,6 +15,7 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.common.ErrorMessageUtil;
 import ru.yandex.practicum.filmorate.common.mappers.FilmRowMapper;
+import ru.yandex.practicum.filmorate.controller.parameters.FilmSortParameters;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Director;
@@ -234,28 +235,22 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public List<Film> getSortedFilmByDirector(String param, int directorId) {
+    public List<Film> getSortedFilmByDirector(FilmSortParameters param, int directorId) {
         if (directorStorage.getDirectorsByIds(List.of(directorId)).isEmpty()) {
             throw new NotFoundException("Режиссера с данным ID не найдено");
         }
-        String sql =
-                "SELECT f.\"id\", f.\"name\", f.\"description\" , f.\"release_date\" , f.\"duration\" , "
+        String sql = "SELECT f.\"id\", f.\"name\", f.\"description\" , f.\"release_date\" , f.\"duration\" , "
                         + "f.\"mpa_rating_id\" as id_rating, mr.\"name\" AS name_rating FROM \"films\" f\n"
                         + "RIGHT JOIN \"films_directors\" fd ON fd.\"film_id\" = f.\"id\" \n"
                         + "LEFT JOIN \"MPA_ratings\" mr ON mr.\"id\" = f.\"mpa_rating_id\" \n";
-        switch (param) {
-            case ("year"):
-                sql += "WHERE \"director_id\" = ?\n"
-                        + "ORDER BY SELECT EXTRACT (YEAR FROM f.\"release_date\");";
-                break;
-            case ("likes"):
-                sql += "LEFT JOIN \"likes\" l ON l.\"id_film\" = f.\"id\" \n"
-                        + "WHERE \"director_id\" = ?\n"
-                        + "GROUP BY f.\"id\" \n"
-                        + "ORDER BY COUNT(l.\"id_user\") DESC;";
-                break;
-            default:
-                throw new ValidationException("Указан неверный параметр сортировки (требуется year/likes)");
+        if (param.equals(FilmSortParameters.year)) {
+            sql += "WHERE \"director_id\" = ?\n"
+                    + "ORDER BY SELECT EXTRACT (YEAR FROM f.\"release_date\");";
+        } else {
+            sql += "LEFT JOIN \"likes\" l ON l.\"id_film\" = f.\"id\" \n"
+                    + "WHERE \"director_id\" = ?\n"
+                    + "GROUP BY f.\"id\" \n"
+                    + "ORDER BY COUNT(l.\"id_user\") DESC;";
         }
         final List<Film> films = jdbcTemplate.query(sql, filmRowMapper, directorId);
         final List<Integer> idList = films.stream().map(Film::getId).collect(toUnmodifiableList());
@@ -620,14 +615,5 @@ public class FilmDbStorage implements FilmStorage {
 
         @Getter
         private final int columnIndex;
-    }
-
-    @AllArgsConstructor
-    private enum FilmSortParameter {
-        YEAR("year"),
-        LIKES("likes");
-
-        @Getter
-        private final String sortParameter;
     }
 }

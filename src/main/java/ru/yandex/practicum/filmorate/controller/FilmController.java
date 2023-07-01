@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.filmorate.controller.parameters.FilmSortParameters;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
@@ -63,15 +64,15 @@ public class FilmController {
 
     @GetMapping("/popular")
     public List<Film> getPopular(@RequestParam(name = "count") Optional<Integer> count,
-                                  @RequestParam(value = "genreId", required = false) Optional<Integer> genreId,
-                                  @RequestParam(value = "year", required = false) Optional<Integer> year) {
+            @RequestParam(value = "genreId", required = false) Optional<Integer> genreId,
+            @RequestParam(value = "year", required = false) Optional<Integer> year) {
         log.info(String.format("GET /films/popular?count={count}&genreId={genreId}&year={year}, {count} = %s, " +
                 "{genreID} = %s, {year} = %s", count, genreId, year));
         return filmService.getPopularByGenresAndYear(count, genreId, year);
     }
 
     @GetMapping("/director/{directorId}")
-    public List<Film> getSortedFilmByDirector(@RequestParam(name = "sortBy") String param,
+    public List<Film> getSortedFilmByDirector(@RequestParam(name = "sortBy") FilmSortParameters param,
             @PathVariable int directorId) {
         log.info(String.format("GET /films/director/directorId={directorId}?sortBy={param}, "
                 + "{directorId} = %s, {param} = %s", directorId, param));
@@ -97,7 +98,7 @@ public class FilmController {
 
     @GetMapping("/common")
     public List<Film> getCommonFilms(@RequestParam(name = "userId") int userId,
-                                     @RequestParam(name = "friendId") int friendId) {
+            @RequestParam(name = "friendId") int friendId) {
         log.info("Поступил запрос на получение списка общих фильмов пользователя с id {} и {}", userId, friendId);
         return filmService.getCommonFilms(userId, friendId);
     }

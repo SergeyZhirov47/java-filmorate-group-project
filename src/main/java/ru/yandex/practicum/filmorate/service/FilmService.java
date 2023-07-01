@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.common.ErrorMessageUtil;
+import ru.yandex.practicum.filmorate.controller.parameters.FilmSortParameters;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.EventStorage;
@@ -93,7 +94,7 @@ public class FilmService {
         checkExistsWithException(isUserExists(id), ErrorMessageUtil.getNoUserWithIdMessage(id));
     }
 
-    public List<Film> getSortedFilmByDirector(String param, int directorId) {
+    public List<Film> getSortedFilmByDirector(FilmSortParameters param, int directorId) {
         return filmStorage.getSortedFilmByDirector(param, directorId);
     }
 
