@@ -214,22 +214,6 @@ public class FilmDbStorage implements FilmStorage {
         return films;
     }
 
-
-    @Override
-    public List<Film> getSortedFilmByDirector(String param, int directorId) {
-        String sql = "SELECT f.\"id\", f.\"name\", f.\"description\" , f.\"release_date\" , f.\"duration\" , f.\"mpa_rating_id\"  FROM \"films\" f\n"
-                + "RIGHT JOIN \"films_directors\" fd ON fd.\"film_id\" = f.\"id\" \n"
-                + "WHERE \"director_id\" = ?\n";
-        switch (param) {
-            case ("year") :
-                sql += "ORDER BY SELECT EXTRACT (YEAR FROM f.\"release_date\");";
-                break;
-            case ("likes") :
-                sql += "";
-        }
-        return null;
-    }
-
     public List<Film> getPopularByGenresAndYear(Integer count, Integer genreId, Integer year) {  
         List<Film> filmList = getPopular(count);
         if (genreId != null) {
@@ -276,7 +260,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public List<Film> search(String query, String by) {
-        final List<Film> films = new ArrayList<>(getPopular(Optional.empty()));
+        final List<Film> films = new ArrayList<>(getPopular(null);
         final List<Film> validatedFilms = new ArrayList<>();
         final String lowerCaseQuery = query.toLowerCase();
         switch (by) {
