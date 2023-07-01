@@ -6,6 +6,8 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Component;
 import ru.yandex.practicum.filmorate.common.mappers.EventRowMapper;
 import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.enums.EventType;
+import ru.yandex.practicum.filmorate.model.enums.Operation;
 import ru.yandex.practicum.filmorate.storage.EventStorage;
 
 import java.sql.PreparedStatement;
@@ -35,8 +37,8 @@ public class EventDbStorage implements EventStorage {
         jdbcTemplate.update(connection -> {
             PreparedStatement stmt = connection.prepareStatement(sql, new String[]{"id"});
             stmt.setInt(1, event.getUserId());
-            stmt.setString(2, event.getEventType());
-            stmt.setString(3, event.getOperation());
+            stmt.setString(2, event.getEventType().name());
+            stmt.setString(3, event.getOperation().name());
             stmt.setInt(4, event.getEntityId());
             return stmt;
         }, keyHolder);
@@ -47,7 +49,7 @@ public class EventDbStorage implements EventStorage {
         return event;
     }
 
-    public Event addEvent(int userId, int entityId, String eventType, String operation) {
+    public Event addEvent(int userId, int entityId, EventType eventType, Operation operation) {
         Event event = Event.builder()
                         .userId(userId)
                         .entityId(entityId)

@@ -7,6 +7,8 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.enums.EventType;
+import ru.yandex.practicum.filmorate.model.enums.Operation;
 import ru.yandex.practicum.filmorate.storage.EventStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.FriendStorage;
@@ -58,7 +60,7 @@ public class UserService {
 
         friendStorage.addFriend(userId, friendId);
 
-        eventStorage.addEvent(userId, friendId, "FRIEND", "ADD");
+        eventStorage.addEvent(userId, friendId, EventType.FRIEND, Operation.ADD);
     }
 
     public void deleteFriend(int userId, int friendId) {
@@ -67,7 +69,7 @@ public class UserService {
 
         friendStorage.deleteFriend(userId, friendId);
 
-        eventStorage.addEvent(userId, friendId, "FRIEND", "REMOVE");
+        eventStorage.addEvent(userId, friendId, EventType.FRIEND, Operation.REMOVE);
     }
 
     public List<User> getFriends(int userId) {

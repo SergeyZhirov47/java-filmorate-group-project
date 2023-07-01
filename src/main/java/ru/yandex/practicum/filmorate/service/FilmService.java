@@ -6,6 +6,8 @@ import ru.yandex.practicum.filmorate.common.ErrorMessageUtil;
 import ru.yandex.practicum.filmorate.controller.parameters.FilmSortParameters;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.enums.EventType;
+import ru.yandex.practicum.filmorate.model.enums.Operation;
 import ru.yandex.practicum.filmorate.storage.EventStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.LikeStorage;
@@ -49,7 +51,7 @@ public class FilmService {
 
         likeStorage.addLike(filmId, userId);
 
-        eventStorage.addEvent(userId, filmId, "LIKE", "ADD");
+        eventStorage.addEvent(userId, filmId, EventType.LIKE, Operation.ADD);
     }
 
     public void deleteLike(int filmId, int userId) {
@@ -58,7 +60,7 @@ public class FilmService {
 
         likeStorage.removeLike(filmId, userId);
 
-        eventStorage.addEvent(userId, filmId, "LIKE", "REMOVE");
+        eventStorage.addEvent(userId, filmId, EventType.LIKE, Operation.REMOVE);
     }
 
 
