@@ -214,6 +214,7 @@ public class FilmDbStorage implements FilmStorage {
         return films;
     }
 
+    @Override
     public List<Film> getPopularByGenresAndYear(Integer count, Integer genreId, Integer year) {
         List<Film> filmList = getPopular(count);
         if (genreId != null) {
