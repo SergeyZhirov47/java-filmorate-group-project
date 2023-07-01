@@ -73,8 +73,12 @@ public class FilmController {
     @GetMapping("/director/{directorId}")
     public List<Film> getSortedFilmByDirector(@RequestParam(name = "sortBy") String param,
             @PathVariable int directorId) {
-        log.info(String.format("GET /films/director/{directorId}, {directorId} = %s", directorId));
-        return filmService.getSortedFilmByDirector(param, directorId);
+        log.info(String.format("GET /films/director/directorId={directorId}?sortBy={param}, "
+                + "{directorId} = %s, {param} = %s", directorId, param));
+        List<Film> films = filmService.getSortedFilmByDirector(param, directorId);
+        log.info(String.format("Список фильмов режиссера с id = {id}, отсортированных по параметру = {param} получен, "
+                + "{id} = %d, {param} = %s", directorId, param));
+        return films;
     }
 
     @DeleteMapping("/{id}")
@@ -85,7 +89,10 @@ public class FilmController {
 
     @GetMapping("/search")
     public List<Film> search(@RequestParam String query, @RequestParam String by) {
-        return filmService.search(query, by);
+        log.info(String.format("GET /films/search?query={query}&by={by}, {query} = %s " + "{by} = %s", query, by));
+        List<Film> films = filmService.search(query, by);
+        log.info(String.format("Результаты поиска по \"%s\" получены", query));
+        return films;
     }
 
     @GetMapping("/common")
