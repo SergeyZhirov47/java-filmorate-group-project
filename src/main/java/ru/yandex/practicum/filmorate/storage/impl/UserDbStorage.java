@@ -108,72 +108,63 @@ public class UserDbStorage implements UserStorage {
     }
 
     @Override
-    public List<Integer> getRecommendedFilmsForUser(int id) {
-        get(id).orElseThrow(() -> new ValidationException("Пользователя с id не существует"));
+    public List<Integer> getRecommendedFilmsForUser(int userId) {
+        get(userId).orElseThrow(() -> new ValidationException("Пользователя с id не существует"));
 
-        final Map<Integer, Collection<Integer>> userLikedFilmsMap = getLikedFilmsByUsers();
-
-        final HashSet<Integer> likedFilms = new HashSet<>(userLikedFilmsMap.getOrDefault(id, Collections.emptySet()));
+        List<Integer> likedFilms = getLikedFilms(userId);
         if (likedFilms.isEmpty()) {
             return Collections.emptyList();
         }
 
-        final Map<Integer, Integer> commonLikes = new HashMap<>();
+        Map<Integer, Integer> commonLikes = new HashMap<>();
 
-        for (Map.Entry<Integer, Collection<Integer>> entry : userLikedFilmsMap.entrySet()) {
-            int userId = entry.getKey();
-            if (userId != id) {
-                Collection<Integer> films = entry.getValue();
-                int commonLikesCount = 0;
-                for (int filmId : films) {
-                    if (likedFilms.contains(filmId)) {
-                        commonLikesCount++;
-                    }
-                }
-                if (commonLikesCount > 0) {
-                    commonLikes.put(userId, commonLikesCount);
-                }
-            }
-        }
+        String sqlQuery = "SELECT id_user, id_film FROM likes WHERE id_user != :userId";
+        SqlParameterSource parameters = new MapSqlParameterSource().addValue("userId", userId);
 
-        int maxCommonLikes = commonLikes.values().stream()
-                .max(Comparator.comparing(Integer::intValue))
-                .orElse(0);
-
-        final Set<Integer> filmsId = new TreeSet<>();
-
-        for (Map.Entry<Integer, Integer> entry : commonLikes.entrySet()) {
-            int otherId = entry.getKey();
-            int commonLikeCount = entry.getValue();
-            if (commonLikeCount == maxCommonLikes) {
-                Collection<Integer> otherLikedFilms = userLikedFilmsMap.get(otherId);
-                for (int idFilm : otherLikedFilms) {
-                    if (!likedFilms.contains(idFilm)) {
-                        filmsId.add(idFilm);
-                    }
-                }
-            }
-        }
-
-        return new ArrayList<>(filmsId);
-    }
-
-    private Map<Integer, Collection<Integer>> getLikedFilmsByUsers() {
-        final String sqlQuery = "SELECT id_user, id_film FROM likes";
-
-        final List<Map<String, Object>> results = jdbcTemplate.queryForList(sqlQuery);
-
-        final Map<Integer, Collection<Integer>> userLikedFilmsMap = new HashMap<>();
+        List<Map<String, Object>> results = namedParameterJdbcTemplate.queryForList(sqlQuery, parameters);
 
         for (Map<String, Object> row : results) {
-            int userId = (int) row.get("id_user");
+            int otherId = (int) row.get("id_user");
             int filmId = (int) row.get("id_film");
 
-            Collection<Integer> likedFilms = userLikedFilmsMap.computeIfAbsent(userId, k -> new HashSet<>());
-            likedFilms.add(filmId);
+            if (likedFilms.contains(filmId)) {
+                commonLikes.put(otherId, commonLikes.getOrDefault(otherId, 0) + 1);
+            }
         }
 
-        return userLikedFilmsMap;
+        List<Integer> commonLikedUsers = new ArrayList<>(commonLikes.keySet());
+
+        if (commonLikedUsers.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        List<Integer> recommendedFilms = getRecommendedFilms(userId, commonLikedUsers);
+
+        if (recommendedFilms.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        return recommendedFilms;
+    }
+
+    private List<Integer> getRecommendedFilms(int userId, List<Integer> commonLikedUsers) {
+        String selectFilms = "SELECT DISTINCT f.id FROM films f " +
+                "INNER JOIN likes l ON f.id = l.id_film " +
+                "WHERE l.id_user IN (:userIds) AND l.id_film NOT IN " +
+                "(SELECT id_film FROM likes WHERE id_user = :userId)";
+
+        SqlParameterSource parameters = new MapSqlParameterSource()
+                .addValue("userIds", commonLikedUsers)
+                .addValue("userId", userId);
+
+        return namedParameterJdbcTemplate.queryForList(selectFilms, parameters, Integer.class);
+    }
+
+    private List<Integer> getLikedFilms(int userId) {
+        String sqlQuery = "SELECT id_film FROM likes WHERE id_user = :userId";
+        SqlParameterSource parameters = new MapSqlParameterSource().addValue("userId", userId);
+
+        return namedParameterJdbcTemplate.queryForList(sqlQuery, parameters, Integer.class);
     }
 
     @Override
