@@ -4,7 +4,13 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.common.ErrorMessageUtil;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.enums.EventType;
+import ru.yandex.practicum.filmorate.model.enums.Operation;
+import ru.yandex.practicum.filmorate.storage.EventStorage;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.FriendStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
@@ -16,6 +22,8 @@ import java.util.Optional;
 public class UserService {
     protected final UserStorage userStorage;
     protected final FriendStorage friendStorage;
+    private final FilmStorage filmStorage;
+    private final EventStorage eventStorage;
 
     public int add(User user) {
         user.setEmptyNameAsLogin();
@@ -51,6 +59,8 @@ public class UserService {
         checkFriendExists(friendId);
 
         friendStorage.addFriend(userId, friendId);
+
+        eventStorage.addEvent(userId, friendId, EventType.FRIEND, Operation.ADD);
     }
 
     public void deleteFriend(int userId, int friendId) {
@@ -58,6 +68,8 @@ public class UserService {
         checkFriendExists(friendId);
 
         friendStorage.deleteFriend(userId, friendId);
+
+        eventStorage.addEvent(userId, friendId, EventType.FRIEND, Operation.REMOVE);
     }
 
     public List<User> getFriends(int userId) {
@@ -71,6 +83,15 @@ public class UserService {
         checkOtherUserExists(otherUserId);
 
         return friendStorage.getCommonFriends(userId, otherUserId);
+    }
+
+    public List<Film> getRecommendedFilms(int id) {
+        return filmStorage.get(userStorage.getRecommendedFilmsForUser(id));
+    }
+
+    public List<Event> getEvents(int id) {
+        checkUserExists(id);
+        return eventStorage.getEventsByUserId(id);
     }
 
     private boolean isUserExists(int id) {

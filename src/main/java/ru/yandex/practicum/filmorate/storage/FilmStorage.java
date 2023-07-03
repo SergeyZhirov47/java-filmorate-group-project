@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage;
 
+import ru.yandex.practicum.filmorate.controller.parameters.FilmSortParameters;
 import ru.yandex.practicum.filmorate.model.Film;
 
 import java.util.List;
@@ -22,5 +23,13 @@ public interface FilmStorage {
 
     boolean contains(int id);
 
-    List<Film> getPopular(Optional<Integer> count);
+    List<Film> getPopular(Integer count);
+
+    List<Film> getPopularByGenresAndYear(Integer count, Integer genreId, Integer year);
+
+    List<Film> getSortedFilmByDirector(FilmSortParameters param, int directorId);
+
+    List<Film> search(String query, String by);
+
+    List<Film> getCommonFilms(int userId, int friendId);
 }
